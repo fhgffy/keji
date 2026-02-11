@@ -1,0 +1,6 @@
+jni/obj/
+jni/libs/
+*.o
+*.d
+*.so
+*.a

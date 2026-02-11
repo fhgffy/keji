@@ -1,0 +1,1243 @@
+//
+// Created by 泓清 on 2022/8/26.
+//
+
+//由Tomatosauce移植
+//由Tomatosauce移植
+//由Tomatosauce移植
+
+#include <draw.h>
+//#include "include.h"
+//#include "include.h"
+#include "obfuscate.h"
+#include "oxorany.h"
+#include "FONTS/Font.h"
+#include "FONTS/Social.h"
+#include "FONTS/F47.h"
+#include "FONTS/F48.h"
+#include "FONTS/F19.h"
+#include "FONTS/F50.h"
+#include "FONTS/F68.h"
+#include "FONTS/F86.h"
+#include "FONTS/LoginLogo.h"
+#include "读写工具/内核读写.h"
+#include "结构体.h"
+#include "渲染.h"
+
+// Var
+
+bool show = true;
+static bool 一键开关 = false;
+static int style_idx = 1;
+float  godvalue = 1.7;
+int 共享=false;
+static int 录屏时长 = 20; // 默认时间为10秒
+static std::atomic<bool> isRecording(false); // 全局变量
+static std::atomic<int> recordingTimeElapsed(0); // 录制经过的时间
+bool 悬浮球 = false;
+  bool 悬浮窗 = true;
+  static bool 窗口状态=false; //窗口状态
+  ImVec2 Pos;
+
+void *handle;// 动态库方案
+EGLDisplay display = EGL_NO_DISPLAY;
+EGLConfig config;
+EGLSurface surface = EGL_NO_SURFACE;
+ANativeWindow *native_window;
+ANativeWindow *(*createNativeWindow)(const char *surface_name ,uint32_t screen_width ,uint32_t screen_height);
+EGLContext context = EGL_NO_CONTEXT;
+
+Screen full_screen;/*
+int Orientation = 0;
+int screen_x = 0, screen_y = 0;
+int init_screen_x = 0, init_screen_y = 0;
+bool g_Initialized = false;
+*/
+string exec(string command) {
+    char buffer[128];
+    string result = "";
+    // Open pipe to file
+    FILE* pipe = popen(command.c_str(), "r");
+    if (!pipe) {
+        return "popen failed!";
+    }
+    // read till end of process:
+    while (!feof(pipe)) {
+        // use buffer to read and add to result
+        if (fgets(buffer, 128, pipe) != nullptr){
+            result += buffer;
+        }
+    }
+    pclose(pipe);
+    return result;
+}
+
+std::string ReadFileContent(const std::string& filePath) {
+    std::ifstream file(filePath, std::ios::in);
+    if (!file.is_open()) {
+        return "无法打开文件";
+    }
+
+    std::string content((std::istreambuf_iterator<char>(file)),
+                         std::istreambuf_iterator<char>());
+    file.close();
+    return content;
+}
+  std::string filePath1 = "/sdcard/Best/王者小狐狸设备码.c";
+std::string fileContent1 = ReadFileContent(filePath1);
+
+// 添加的代码，读取第二个文件
+std::string filePath2 = "/sdcard/Best/王者小狐狸卡密.c"; // 替换为实际的文件路径
+std::string fileContent2 = ReadFileContent(filePath2);
+
+std::string filePath3 = "/sdcard/Best/王者小狐狸卡密时间.c"; // 替换为实际的文件路径
+std::string fileContent3 = ReadFileContent(filePath3);
+
+
+int init_egl(int _screen_x, int _screen_y, bool log)
+{  
+  FILE *fp;
+    char buffer[1024];
+
+    fp = popen("settings put system block_untrusted_touches 0", "r");
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        printf("[+] 正在执行指令信任所有触摸\n[+] %s", buffer);
+    }
+    pclose(fp);
+//system ("settings put system block_untrusted_touches 0");
+
+system ("settings put global block_untrusted_touches 0 > /dev/null 2>&1");
+system ("settings put secure block_untrusted_touches 0 > /dev/null 2>&1");
+/*
+int 防录屏;
+ puts("[+] [1]开启防录屏 [2]关闭防录屏:");   
+ scanf("%d", &防录屏);
+   if (防录屏 == 1) {
+     ::native_window = android::ANativeWindowCreator::Create("AImGui", _screen_x, _screen_y, true);
+     printf("[+] 开启防录屏成功");
+    	} else if (防录屏 == 2) {
+    	native_window = android::ANativeWindowCreator::Create("Ssage", _screen_x, _screen_y, false);
+    	printf("[+] 关闭防录屏成功");
+    	}
+	*/
+ 
+
+bool sgfop;
+    string sfflp;
+    cout << "[+] 是否开启防录屏 1[开启] 2[关闭]: ";
+    
+    cin >> sfflp;
+    if (sfflp == "1")
+        sgfop = true;
+    else
+        sgfop = false;
+   
+
+if (sgfop)
+{
+printf("[+] 防录屏开启\n");
+ ::native_window = android::ANativeWindowCreator::Create("AImGui", _screen_x, _screen_y, true);
+	}
+	
+	if (!sgfop)//关闭方露萍
+{
+printf("[+] 防录屏关闭\n");
+	
+    
+native_window = android::ANativeWindowCreator::Create("Ssage", _screen_x, _screen_y, false);
+	}
+    
+
+     
+     
+     ANativeWindow_acquire(native_window);
+     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+     if (display == EGL_NO_DISPLAY)
+     {
+         printf("获取显示设备失败，错误码：%u\n", glGetError());
+         return -1;
+     }
+     if (log)
+     {
+         printf("获取显示设备成功\n");
+     }
+     if (eglInitialize(display, 0, 0) != EGL_TRUE)
+     {
+         printf("初始化EGL失败，错误码：%u\n", glGetError());
+         return -1;
+     }
+     if (log)
+     {
+         printf("初始化EGL成功\n");
+     }
+     EGLint num_config = 0;
+     const EGLint attribList[] = {
+         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+         EGL_BLUE_SIZE, 5,     //-->删除
+         EGL_GREEN_SIZE, 6,    //-->删除
+         EGL_RED_SIZE, 5,      //-->删除
+         EGL_BUFFER_SIZE, 32, //-->新增字段
+         EGL_DEPTH_SIZE, 16,
+         EGL_STENCIL_SIZE, 8,
+         EGL_NONE};
+     if (eglChooseConfig(display, attribList, nullptr, 0, &num_config) != EGL_TRUE)
+     {
+         printf("选择配置失败，错误码：%u\n", glGetError());
+         return -1;
+     }
+     if (log)
+     {
+         printf("配置数量：%d\n", num_config);
+     }
+     if (!eglChooseConfig(display, attribList, &config, 1, &num_config))
+     {
+         printf("选择配置失败，错误码：%u\n", glGetError());
+         return -1;
+     }
+     if (log)
+     {
+         printf("选择配置成功\n");
+     }
+     EGLint egl_format;
+     eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &egl_format);
+     ANativeWindow_setBuffersGeometry(native_window, 0, 0, egl_format);
+     const EGLint attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
+     context = eglCreateContext(display, config, EGL_NO_CONTEXT, attrib_list);
+     if (context == EGL_NO_CONTEXT)
+     {
+         printf("创建上下文失败，错误码：%u\n", glGetError());
+         return -1;
+     }
+     if (log)
+     {
+         printf("创建上下文成功\n");
+     }
+     surface = eglCreateWindowSurface(display, config, native_window, nullptr);
+     if (surface == EGL_NO_SURFACE)
+     {
+         printf("创建表面失败，错误码：%u\n", glGetError());
+         return -1;
+     }
+     if (log)
+     {
+         printf("创建表面成功\n");
+     }
+     if (!eglMakeCurrent(display, surface, surface, context))
+     {
+         printf("设置当前上下文失败，错误码：%u\n", glGetError());
+         return -1;
+     }
+     if (log)
+     {
+         printf("设置当前上下文成功\n");
+     }
+     return 1;
+}
+void screen_config(){
+  std::string window_size = exec("wm size");
+  sscanf(window_size.c_str(),"Physical size: %dx%d",&screen_x,&screen_y);
+ // screen_x = 2000;
+ // screen_y = 3000;
+  full_screen.ScreenX = screen_x;
+  full_screen.ScreenY = screen_y;
+      std::cout << "[+] 分辨率: " << screen_x << "x" << screen_y << std::endl;
+  std::thread *orithread = new
+
+
+std::thread([&] {
+    while(true){
+      //Orientation = atoi(exec("dumpsys input | grep SurfaceOrientation | awk '{print $2}' | head -n 1").c_str());
+      Orientation = atoi(exec("dumpsys display | grep 'mCurrentOrientation' | cut -d'=' -f2").c_str());
+      if(Orientation == 0 || Orientation == 2){
+        screen_x = full_screen.ScreenX;
+        screen_y = full_screen.ScreenY;
+      }
+      if(Orientation == 1 || Orientation == 3){
+        screen_x = full_screen.ScreenY;
+        screen_y = full_screen.ScreenX;
+      } else{
+                         std::string tempstr = exec("dumpsys input |grep orientation | tail -n 1 | awk '{print $6}'");
+                        int tempx = atoi(tempstr.substr(12,1).c_str());
+                        if(tempx == 0 || tempx ==1 || tempx == 2 || tempx==3 ){
+                            Orientation = tempx;
+                            if(Orientation == 1 || Orientation == 3){
+						        screen_x = full_screen.ScreenY;
+                                screen_y = full_screen.ScreenX;
+					        }else{
+						        screen_x = full_screen.ScreenX;
+                                screen_y = full_screen.ScreenY;
+                            }
+                        // printf("now orientation :%d\n",tempx);
+                }
+            }
+      std::this_thread::sleep_for(0.5s);
+    }
+    
+  });
+  orithread->detach();
+}
+
+
+ImFont* Social = nullptr;
+ImFont* F86 = nullptr;
+ImFont* LOGIN = nullptr;
+ImFont* Subtab = nullptr;
+ImFont* COLOR = nullptr;
+ImFont* SR = nullptr;
+ImFont* F48 = nullptr;
+ImFont* F50 = nullptr;
+ImFont* F68 = nullptr;
+ImFont* CLOSE = nullptr;
+float menu[4] = { 0/255.f, 255/255.f, 0/255.f, 1.000f };
+
+void ImGuiMenustyle(){
+	/*NumIo[1] = 300.0f;                                                  
+    NumIo[2] = 400.0f;
+ 	NumIo[3] = 340.0f;
+    NumIo[4] = 20.0f;
+  	NumIo[6] = 1500.0f;
+    NumIo[5] = 650.0f;
+    NumIo[7] = 300.0f;
+    NumIo[8] = 2.0f;
+    NumIo[9] = 10.0f; 
+	NumIo[11] = 1000.0f;
+	NumIo[13] = 0.0f;
+	NumIo[14] = 105.0f;
+	NumIo[15] = 105.0f;*/
+}
+
+
+
+float FOVT;
+float FOVTB;
+bool active = false;
+static char s[64];
+struct sConfig {
+		bool Bypass = true;
+		bool AutoFiree;
+		int Hit;
+        int IpadS;
+		
+	    int Line;
+        int Prid;
+	    int Skeleton;
+	    int RadarX;
+	    int RadarY;
+        int Loot;
+struct sWIDGETS_EXPERT {
+        bool Line;
+        bool Box;
+		bool AutoFire;
+        bool Skeleton;
+        bool Health;
+        bool LootItem;
+        bool Name;
+        bool Distance;
+		bool Alert;
+        bool TeamID;
+        bool Radar;
+		bool AirDrop;
+		bool Weapon;
+		bool Gen;
+        bool Genn;
+		bool ShowVehicle;
+		bool ShowVehiclee;
+        bool NoBot;
+		bool VehicleFuel;
+		bool VehicleHP;
+		bool FPS;
+        bool Loot;};
+sWIDGETS_EXPERT WIDGETS_EXPERT;
+struct sHighRisk {
+		bool Swim;
+        bool Switch;
+        bool Scope;
+        bool FastMove;
+        bool SuperAim;
+        bool Unlock;
+        bool NoFog;
+        bool Shoot;
+        bool Fly;
+        bool Reload;
+        bool HitRGB;
+        bool Ipad;
+		bool Prone;
+		bool Ljump;
+		bool Blockspect;
+        bool Shake;
+        bool Recoil;
+        bool Instant;
+		bool HitEffect;};
+    sHighRisk HighRisk{0};
+struct sAimMenu {
+        bool Enable;
+		int Meter;
+        bool Pov;
+		bool Pred;
+		bool Recoil;
+		bool Aimbot;
+		int Cross;
+		int Position;
+        float Recc;
+
+        bool IgnoreKnocked;
+        bool VisCheck;
+		bool IgnoreBots;
+		bool TargetLine;};
+sAimMenu SilentAim{0};
+sAimMenu AimBot{0}; 
+struct sColorsESP {
+	    float *PlayerVisLine;
+        float *PlayerHideLine;
+		float *BotVisLine;
+		float *BotHideLine;
+        float *PlayerVisSkeleton;
+        float *PlayerHideSkeleton;
+        float *BotVisSkeleton;
+		float *BotHideSkeleton;
+        float *PlayerVisBox;
+        float *PlayerHideBox;
+        float *BotVisBox;
+        float *BotHideBox;
+        float *PlayerRadar;
+        float *BotRadar;
+        float *PlayerAlert;
+        float *BotAlert;
+		float *Fov;
+		float *Fova;
+        };
+    sColorsESP ColorsESP{0};
+};
+sConfig Config{0};
+#define CREATE_COLOR(r, g, b, a) new float[4] {(float)r, (float)g, (float)b, (float)a};
+/*void DrawInit(){
+py = screen_x / 2;
+px = screen_y / 2;
+ImGuiMenustyle();
+ColorInitialization();
+}*/
+
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <linux/input.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+
+int GetEventCount3()
+{
+    DIR *dir = opendir("/dev/input/");
+    dirent *ptr = NULL;
+    int count = 0;
+    while ((ptr = readdir(dir)) != NULL)
+    {
+        if (strstr(ptr->d_name, "event"))
+            count++;
+    }
+    return count ? count : -1;
+}
+bool kang = true;
+
+
+
+int 音量()
+{
+    int EventCount = GetEventCount3();
+    if (EventCount < 0)
+    {
+        printf("未找到输入设备\n");
+        return -1;
+    }
+
+    int *fdArray = (int *)malloc(EventCount * sizeof(int));
+
+    for (int i = 0; i < EventCount; i++)
+    {
+        char temp[128];
+        sprintf(temp, "/dev/input/event%d", i);
+        fdArray[i] = open(temp, O_RDWR | O_NONBLOCK);
+    }
+
+    input_event ev;
+    int count = 0; // 记录按下音量键的次数
+
+    while (1)
+    {
+        for (int i = 0; i < EventCount; i++)
+        {
+            memset(&ev, 0, sizeof(ev));
+            read(fdArray[i], &ev, sizeof(ev));
+            if (ev.type == EV_KEY && ev.code == KEY_VOLUMEUP && ev.value == 1 && kang == true)
+            {
+          悬浮窗 = true;
+        窗口状态 = true;
+		
+            }
+            else if (ev.type == EV_KEY && ev.code == KEY_VOLUMEDOWN && ev.value == 1 && kang == true)
+            {
+           	悬浮窗 = false; 窗口状态 = true;
+            }
+        }
+
+        usleep(3000);
+    }
+
+    return 0;
+}
+
+
+
+
+void savesettings(){
+                //添加配置
+        char *ndhdh10=读取文件("/storage/emulated/0/Best/技能栏左右1");
+            if(ndhdh10){jinenglanzX= atof(ndhdh10);}
+            
+            char *ndhdh11=读取文件("/storage/emulated/0/Best/技能栏上下1");
+            if(ndhdh11){jinenglanzY= atof(ndhdh11);}
+            char *ndhdh=读取文件("/storage/emulated/0/Best/小x1");
+            if(ndhdh){SmallMapX= atof(ndhdh);}
+            char *ndhdh2=读取文件("/storage/emulated/0/Best/小y1");
+            if(ndhdh2){SmallMapY= atof(ndhdh2);}
+            char *ndhdh3=读取文件("/storage/emulated/0/Best/大x1");
+            if(ndhdh3){SmallHPX= atof(ndhdh3);}
+            char *ndhdh5=读取文件("/storage/emulated/0/Best/大y1");
+            if(ndhdh5){SmallHPY= atof(ndhdh5);}
+            char *ndhdh991=读取文件("/storage/emulated/0/Best/头像间隔");
+            if(ndhdh991){jiange= atof(ndhdh991);}
+            char *ndhdh992=读取文件("/storage/emulated/0/Best/血量大小");
+            if(ndhdh992){xiaodituxue= atof(ndhdh992);}
+            char *ndhdh993=读取文件("/storage/emulated/0/Best/头像大小");
+            if(ndhdh993){touxiangdaxiao= atof(ndhdh993);}
+            /*共享分辨率x调整
+            共享兵线左右调整
+            共享野怪上下调整
+            共享野怪左右调整
+            共享上下调整
+            共享左右调整*/
+               char *ndhdh6=读取文件("/storage/emulated/0/Best/共享左右调整");
+            if(ndhdh6){ESPMenu.小地图左右调整= atof(ndhdh6);}
+               char *ndhdh7=读取文件("/storage/emulated/0/Best/共享上下调整");
+            if(ndhdh7){ESPMenu.小地图上下调整= atof(ndhdh7);}
+               char *ndhdh8=读取文件("/storage/emulated/0/Best/共享兵线左右调整");
+            if(ndhdh8){ESPMenu.兵线左右调整= atof(ndhdh8);}
+            char *ndhdh91=读取文件("/storage/emulated/0/Best/共享野怪左右调整");
+            if(ndhdh91){ESPMenu.野怪左右调整= atof(ndhdh91);}
+            char *ndhdh101=读取文件("/storage/emulated/0/Best/共享野怪上下调整");
+            if(ndhdh101){ESPMenu.野怪上下调整= atof(ndhdh101);}
+            char *ndhdh111=读取文件("/storage/emulated/0/Best/共享分辨率x调整");
+            if(ndhdh111){ESPMenu.分辨率X= atof(ndhdh111);}
+}
+
+
+
+
+#define PI 3.141592653589793238
+void drawHexagonStar(float x, float y, float size, float rotation, ImDrawList* drawList, ImU32 color){
+const int numPoints = 6; // 六角星有6个顶点
+ImVec2 center(x, y);
+ImVec2 points[numPoints];
+for (int i = 0; i < numPoints; i++)
+{
+float angle = rotation + 2 * PI * i / numPoints;
+points[i] = ImVec2(center.x + size * cos(angle), center.y + size * sin(angle));
+}
+// 绘制两个大三角形
+drawList->AddLine(points[0], points[2], color, 3.0f);
+drawList->AddLine(points[2], points[4], color, 3.0f);
+drawList->AddLine(points[4], points[0], color, 3.0f);
+drawList->AddLine(points[1], points[3], color, 3.0f);
+drawList->AddLine(points[3], points[5], color, 3.0f);
+drawList->AddLine(points[5], points[1], color, 3.0f);
+}
+//悬浮窗三角形绘制
+void DrawLogo(float x, float y, float size){
+
+ImDrawList *draw_list = ImGui::GetWindowDrawList();
+draw_list->AddImage(LOGO图片,{x - size /1,y - size / 1},{x + size / 1,y + size / 1});
+
+
+}
+
+
+
+void ImGui_init(){
+    if (g_Initialized){
+        return;
+    }
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiStyle* style = &ImGui::GetStyle();
+    	ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.IniFilename = NULL;
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
+        io.IniFilename = NULL;
+            static ImFontConfig font_cfg;
+    font_cfg.SizePixels = 22.0f;
+            io.Fonts->AddFontFromMemoryTTF((void *) OPPOSanss_H, OPPOSanss_H_size, 32.0f, &font_cfg, io.Fonts->GetGlyphRangesChineseFull());
+            
+    ImGui::StyleColorsDark();
+    ImGui_ImplAndroid_Init(native_window);
+    ImGui_ImplOpenGL3_Init("#version 300 es");
+        io.ConfigWindowsMoveFromTitleBarOnly = true;
+        io.IniFilename = NULL;
+style->Colors[ImGuiCol_WindowBg]  = ImColor(0, 0, 0, 0);
+		style->WindowBorderSize = 0.0f;
+		io.AnimationSpeed = 1;
+        static const ImWchar icons_ranges[] = { 0xf000, 0xf3ff, 0 };
+            ImFontConfig icons_config;
+            ImFontConfig CustomFont;
+            CustomFont.FontDataOwnedByAtlas = false;
+            icons_config.MergeMode = true;
+            icons_config.PixelSnapH = true;
+            icons_config.OversampleH = 2.5;
+            icons_config.OversampleV = 2.5;
+			ImFontConfig cfg;
+      //cfg.SizePixels = ((float) density / 20.0f);
+    //===================
+	ImFontConfig font_config;
+    font_config.PixelSnapH = false;
+    font_config.OversampleH = 5;
+    font_config.OversampleV = 5;
+    font_config.RasterizerMultiply = 1.2f;
+    static const ImWchar ranges[] ={ 0x0020, 0x00FF,  0x0400, 0x052F,  0x2DE0, 0x2DFF,  0xA640, 0xA69F,  0xE000, 0xE226,  0x2010, 0x205E,  0x0600, 0x06FF,  0xFE00, 0xFEFF,  0, };
+	//========================𝗙𝗢𝗡𝗧𝗦
+    font_config.GlyphRanges = ranges;
+	io.Fonts->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(Custom3), sizeof(Custom3), 25.f, &CustomFont);
+	CLOSE = io.Fonts->AddFontFromMemoryTTF(Loginc, sizeof(Loginc), 30.0f, &font_config, ranges);
+	F48 = io.Fonts->AddFontFromMemoryTTF((void *)F48_data, F48_size, 30.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+	COLOR = io.Fonts->AddFontFromMemoryTTF((void *)F19_data, F19_size, 38.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+	F50 = io.Fonts->AddFontFromMemoryTTF((void *)F50_data, F50_size, 30.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+	F68 = io.Fonts->AddFontFromMemoryTTF((void *)F68_data, F68_size, 54.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+	SR = io.Fonts->AddFontFromMemoryTTF((void *)F48_data, F48_size, 30.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+	LOGIN = io.Fonts->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(Custom3), sizeof(Custom3), 20.f, &CustomFont);
+	Subtab = io.Fonts->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(Custom3), sizeof(Custom3), 35.f, &CustomFont);
+	F86 = io.Fonts->AddFontFromMemoryTTF((void *)F86_data, F86_size, 30.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+	Social = io.Fonts->AddFontFromMemoryTTF((void *)Social_data, Social_size, 30.0f, NULL, io.Fonts->GetGlyphRangesDefault());
+Config.ColorsESP.BotVisLine = CREATE_COLOR(255, 255, 255, 255);
+		Config.ColorsESP.BotHideLine = CREATE_COLOR(255, 255, 255, 255);
+        Config.ColorsESP.PlayerVisLine = CREATE_COLOR(0, 255, 0, 255);
+        Config.ColorsESP.PlayerHideLine = CREATE_COLOR(255, 0, 0, 255);
+        Config.ColorsESP.BotVisBox = CREATE_COLOR(255, 255, 255, 255);
+        Config.ColorsESP.BotHideBox = CREATE_COLOR(255, 255, 0, 255);
+        Config.ColorsESP.PlayerVisBox = CREATE_COLOR(0, 0, 0, 255);
+        Config.ColorsESP.PlayerHideBox = CREATE_COLOR(255, 0, 0, 255);
+		Config.ColorsESP.BotVisSkeleton = CREATE_COLOR(255, 255, 255, 255);
+		Config.ColorsESP.BotHideSkeleton = CREATE_COLOR(200, 200, 0, 255);
+        Config.ColorsESP.PlayerVisSkeleton = CREATE_COLOR(0, 0, 255, 255);
+        Config.ColorsESP.PlayerHideSkeleton = CREATE_COLOR(255, 0, 0, 255);
+		Config.ColorsESP.BotRadar = CREATE_COLOR(255, 255, 255, 255);
+		Config.ColorsESP.PlayerRadar = CREATE_COLOR(0, 255, 0, 255);
+		Config.ColorsESP.BotAlert = CREATE_COLOR(255, 255, 0, 255);
+		Config.ColorsESP.PlayerAlert = CREATE_COLOR(0, 255, 0, 255);
+		Config.ColorsESP.Fov = CREATE_COLOR(255, 255, 255, 255);
+		Config.ColorsESP.Fova = CREATE_COLOR(0, 0, 255, 255);
+		//FOVT = 4.5f;
+		//FOVTB = 4.7f;
+        Config.IpadS = 87.0f;
+        Config.SilentAim.Cross  = 350.0f;
+		Config.AimBot.Cross  = 400.0f;
+		Config.SilentAim.Meter  = 200.0f;
+		Config.AimBot.Meter  = 300.0f;
+		Config.AimBot.Recc  = 1.01f;
+        Config.RadarX = 2.3f;
+		Config.RadarY = 100.0f;
+        Config.Line = 3.0f;
+        Config.Skeleton = 2.0f;
+        Config.Loot = 99.0f;
+    g_Initialized = true;
+    
+    ImGui::StyleColorsClassic(); 
+   加载图片();
+   获取头像2();
+   获取图标();
+    new std::thread(音量);
+   //createSocket();  
+   savesettings();
+}
+
+
+void 上帝god()
+{
+  pid = Driver->获取进程ID((char*)"com.tencent.tmgp.sgame");
+ 
+  Driver->initialize(pid);
+      lil2cpp_base = Driver->获取基址头((char*)"libil2cpp.so");
+    long int xtemp = lil2cpp_base + 0x8BE1000;
+ 
+    long int god_address = Driver->读取指针(Driver->读取指针(xtemp + 0x4220) + 0xA0) + 0x24;
+
+ 
+    Driver->write<float>(god_address, godvalue);
+}
+
+void tick() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplAndroid_NewFrame(init_screen_x,init_screen_y);
+    ImGui::NewFrame();
+    Colors::Text = ImColor(100,103,108,255);
+    Colors::TextActive = ImColor(41,44,49,255);
+    Colors::TextActiveNew = ImColor(255,255,255);
+    Colors::TextNew = ImColor(255,255,255);
+    Colors::FrameHovered = ImColor(255,255,255,255);
+    Colors::FrameOpened = ImColor(255,255,255,255);
+    static int 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 = 1;
+    static int 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕 = 1;
+    ImGui::SetNextWindowSize(ImVec2(500,560));
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (悬浮球)
+  {
+ /*   ImGui::SetNextWindowSize({120, 120});
+    
+    style.Colors[ImGuiCol_WindowBg].w = 0;
+    if (ImGui::Begin("悬浮图片", &悬浮球, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar))
+    {
+    
+        
+         
+     
+      if (窗口状态) {
+        ImGui::SetWindowPos(Pos);
+        窗口状态 = false;
+      }
+      Pos = ImGui::GetWindowPos();
+      ImDrawList* Draw = ImGui::GetWindowDrawList();
+
+      DrawLogo(Pos.x + 62, Pos.y + 52, 60.f);
+
+
+      static bool isDragging = false;
+      if (ImGui::IsMouseDragging(0) && ImGui::IsWindowHovered())
+      {
+        isDragging = true;
+      }
+      if (ImGui::IsMouseReleased(0) && !ImGui::IsMouseDragging(0) && !isDragging && ImGui::IsWindowHovered())
+      {
+        悬浮球 = false;
+        悬浮窗 = true;
+        窗口状态 = true;
+      }
+      if (!ImGui::IsMouseDragging(0))
+      {
+        isDragging = false;
+      }
+      
+    }
+    ImGui::End();*/
+  }
+  style.Colors[ImGuiCol_WindowBg].w = 1;
+ // style.Alpha = 1.f;
+               /* if (ImGui::Begin(OBFUSCATE("IMGUI_GOD LOGIN" ), nullptr,ImGuiWindowFlags_AlwaysAutoResize |  ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
+                static bool isLogin = false;
+                if (!isLogin) {
+                const ImVec2 pos = ImGui::GetWindowPos();
+                ImDrawList* draw = ImGui::GetWindowDrawList();
+                draw->AddRectFilled(ImVec2(pos.x + 8, pos.y + 8), ImVec2(pos.x + 492, pos.y + 552), ImColor(0, 0, 0,255), 10.f,ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomRight | ImDrawFlags_RoundCornersTopRight);
+                draw->AddRectFilled(ImVec2(pos.x + 13, pos.y + 13), ImVec2(pos.x + 487, pos.y + 547), ImColor(40, 40, 40, 255), 8.5f,ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomRight | ImDrawFlags_RoundCornersTopRight);
+                draw->AddRectFilled(ImVec2(pos.x + 30, pos.y + 160), ImVec2(pos.x + 470, pos.y + 220), ImColor(0, 0, 0, 255), 10.f,ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomRight | ImDrawFlags_RoundCornersTopRight);
+                draw->AddText(F50, 40.f, ImVec2(pos.x + 55, pos.y + 50), ImColor(255, 255, 255, 255), oxorany("WIDGETS EXPERT"));    
+                ImGui::SetCursorPos(ImVec2(70, 174));
+                ImGui::InputTextWithHint("##key","YOUR KEY.........", s, sizeof s);
+                ImGui::SetCursorPos(ImVec2(30, 235));
+                if(ImGui::OptButton1("     PASTE YOUR KEY   ", ImVec2(440, 60), false)){
+                }           
+                ImGui::SetCursorPos(ImVec2(100, 315));
+                static std::string err;
+                if (ImGui::OptButton1(" LOGIN", ImVec2(300, 60), false)) {
+                isLogin = true;
+                }
+                } else{*/
+					
+//===============================================| 𝗙𝗟𝗢𝗧𝗜𝗡𝗚 𝗟𝗢𝗚𝗢  |======================≠=================//
+					/*static bool show;           
+        			ImGui::SetNextWindowSize({ 200, 200 });
+        			ImGui::Begin("ICON BUTTON", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
+        			//ImGui::Begin("ICON BUTTON", nullptr, ImGuiWindowFlags_NoDecoration); {
+					const ImVec2 pos = ImGui::GetWindowPos();
+        			ImDrawList* draw = ImGui::GetWindowDrawList();
+					draw->AddRectFilled(ImVec2(pos.x + 50, pos.y + 50), ImVec2(pos.x + 150, pos.y + 150), ImColor(230, 233, 238, 255), 10.f,ImDrawFlags_RoundCornersAll );
+					draw->AddText(F50, 35.f, ImVec2(70 + pos.x, 70 + pos.y), ImColor(41, 44, 49, 255), oxorany("GM"));    			 
+				    draw->AddText(Subtab, 20.f, ImVec2(46 + pos.x, 106 + pos.y), ImColor(0, 0, 255, 255), oxorany("    GTX"));    			 
+				    draw->AddText(Subtab, 20.f, ImVec2(46 + pos.x, 106 + pos.y), ImColor(41, 44, 49, 255), oxorany("              MOD"));
+					ImGui::SetCursorPos({ 70, 70});
+					if(ImGui::WIDGETS_EXPERT_Open("         ", ImVec2(60, 60), false)){
+        			show = true;
+					}*/
+//===================================| 𝗠𝗔𝗜𝗡 𝗜𝗠𝗚𝗨𝗜 𝗠𝗘𝗡𝗨 |≠=======================//
+				if(悬浮窗){
+        		ImGui::SetNextWindowSize( ImVec2(1070 , 690) );
+        		ImGui::MainBegin( "WIDGETS_EXPERT MENU", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_NoDecoration |  ImGuiWindowFlags_NoBackground);
+        		{
+				ImVec2 P1, P2;
+        		ImDrawList* pDrawList;
+        		const auto& p = ImGui::GetWindowPos();
+        		const auto& pWindowDrawList = ImGui::GetWindowDrawList();
+        		const auto& pBackgroundDrawList = ImGui::GetBackgroundDrawList();
+        		const auto& pForegroundDrawList = ImGui::GetForegroundDrawList();
+        		const ImVec2 pos = ImGui::GetWindowPos();
+        		ImDrawList* draw = ImGui::GetWindowDrawList();
+                //======𝗠𝗘𝗡𝗨 𝗕𝗔𝗖𝗞𝗚𝗥𝗢𝗨𝗡𝗗
+				pBackgroundDrawList->AddRectFilled(ImVec2(5.000f + p.x, 5.000f + p.y), ImVec2(1065 + p.x, 685 + p.y), ImColor(170,173,179,255), 15); 
+				draw->AddRectFilled(ImVec2(pos.x + 5, pos.y + 5), ImVec2(pos.x + 320, pos.y + 685), ImColor(220, 223, 228, 255), 15.f,ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomRight | ImDrawFlags_RoundCornersTopRight);
+	  			draw->AddRectFilled(ImVec2(pos.x + 335, pos.y + 25), ImVec2(pos.x + 1048, pos.y + 100), ImColor(220, 223, 228, 255), 10.f,ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomRight | ImDrawFlags_RoundCornersTopRight);
+                //=======𝗧𝗜𝗠𝗘 𝗔𝗡𝗗 𝗗𝗔𝗧𝗘 𝗙𝗨𝗡𝗖𝗧𝗜𝗢𝗡
+				time_t lt;
+    			struct tm *t_m;
+    			lt = time(NULL);
+    			t_m = localtime(&lt);
+				int time_y = t_m->tm_year;
+    			int time_mn = t_m->tm_mon;
+    			int time_d = t_m->tm_mday;
+	    		int time_h = t_m->tm_hour;
+    			int time_m = t_m->tm_min;
+    			int time_s = t_m->tm_sec;
+				std::string time;
+				if (time_h < 10)
+                time += "0";
+    			time += std::to_string(time_h) + "::";
+				if (time_m < 10)
+        		time += "0";
+    			time += std::to_string(time_m) + "::";
+				if (time_s < 10)
+        		time += "0";
+    			time += std::to_string(time_s);
+				draw->AddText(NULL,25.0f,ImVec2(pos.x + 48, pos.y + 493), IM_COL32(41, 44, 49, 255), time.c_str());
+				draw->AddText(NULL,25.0f,ImVec2(pos.x + 152, pos.y + 493), IM_COL32(0, 0, 0, 255), "||");
+				std::string date;
+				date += std::to_string(time_d) + "-";
+				date += std::to_string(time_mn + 1) + "-";
+				date += std::to_string(1900+time_y) ;
+				draw->AddText(NULL,25.0f,ImVec2(pos.x + 180, pos.y + 493), IM_COL32(41, 44, 49, 255), date.c_str());
+                //==============𝗟𝗜𝗡𝗞𝗦 𝗢𝗙 𝗧𝗘𝗟𝗘𝗚𝗥𝗔𝗠 𝗬𝗢𝗨𝗧𝗨𝗕𝗘 𝗔𝗡𝗗 𝗗𝗜𝗦𝗖𝗢𝗥𝗗
+                 ImGui::SetCursorPos({ 45, 605});
+                 /*if(ImGui::WIDGETS_EXPERT_Open(" ", ImVec2(45, 40), true)){
+                 //OpenURL("https://t.me/IMGUI_WIDGETS"); }	
+                 ImGui::SetCursorPos({ 145, 606});
+                 if(ImGui::WIDGETS_EXPERT_Open("             ", ImVec2(40, 40), true)){
+                 //OpenURL("https://youtube.com/@NarendraModi"); }	
+                 ImGui::SetCursorPos({ 245, 607});
+                 if(ImGui::WIDGETS_EXPERT_Open("   ", ImVec2(40, 40), true)){*/
+                // OpenURL("https://discord.com/widgetsexpert"); }	
+                //===========✍️✍️𝗢𝗧𝗛𝗘𝗥 𝗗𝗥𝗔𝗪𝗜𝗡𝗚 𝗔𝗡𝗗 𝗜𝗖𝗢𝗡𝗦
+                //===========🤫🤫𝗗𝗢𝗡𝗧 𝗖𝗛𝗔𝗡𝗚𝗘 𝗣𝗢𝗦𝗜𝗧𝗜𝗢𝗡𝗦 .....𝗢𝗡𝗟𝗬 𝗖𝗛𝗔𝗡𝗚𝗘 𝗖𝗢𝗟𝗢𝗥𝗦 𝗜𝗙 𝗬𝗢𝗨 𝗪𝗔𝗡𝗧
+											draw->AddRect( ImVec2(pos.x + 30, pos.y + 485), ImVec2(pos.x + 295, pos.y + 580), ImColor(41,44,49), 10.0f, ImDrawFlags_RoundCornersAll, 5.0f);
+											draw->AddRectFilled( ImVec2(pos.x + 31, pos.y + 530), ImVec2(pos.x + 294, pos.y + 535), ImColor(41,44,49), 0.0f);
+											draw->AddText(Social,25.0f,ImVec2(pos.x + 40, pos.y + 541), IM_COL32(41, 44, 49, 255), "U");
+											draw->AddText(NULL,25.0f,ImVec2(pos.x + 76, pos.y + 545), IM_COL32(41, 44, 49, 255), "@BingYiBest666");
+											draw->AddText(F86, 70.f, ImVec2(45 + p.x, 30 + p.y), ImColor(0, 0, 0, 255), oxorany("BYNB\nbest"));    			 
+											draw->AddRectFilled( ImVec2(pos.x + 50, pos.y + 177.5), ImVec2(pos.x + 270, pos.y + 182.5), ImColor(41,44,49), 100.0f);
+											draw->AddRectFilled( ImVec2(pos.x + 35, pos.y + 595), ImVec2(pos.x + 95, pos.y + 655), ImColor(3,169,245), 100.0f);
+											draw->AddRectFilled( ImVec2(pos.x + 135 - 2.5, pos.y + 595), ImVec2(pos.x + 195 - 2.5, pos.y + 655), ImColor(0,0,0), 100.0f);
+											draw->AddRectFilled( ImVec2(pos.x + 235 - 5, pos.y + 595), ImVec2(pos.x + 295 - 5, pos.y + 655), ImColor(54,40,169), 100.0f);
+											draw->AddText(Social,40.0f,ImVec2(pos.x + 45 - 1.5, pos.y + 605), IM_COL32(255, 255, 255, 255), "V");//=====𝗧𝗘𝗟𝗘𝗚𝗥𝗔𝗠
+											draw->AddText(Social,40.0f,ImVec2(pos.x + 145 - 2.5, pos.y + 605), IM_COL32(245, 0, 0, 255), "W");//====𝗬𝗢𝗨𝗧𝗨𝗕𝗘
+											draw->AddText(Social,40.0f,ImVec2(pos.x + 245 - 5, pos.y + 605), IM_COL32(255, 255, 255, 255), "F");//===𝗗𝗜𝗦𝗖𝗢𝗥𝗗
+				//====================𝗜𝗠𝗚𝗨𝗜 𝗧𝗔𝗕 𝗕𝗨𝗧𝗧𝗢𝗡𝗦
+            	ImGui::SetCursorPos(ImVec2(30,200));
+            	//ImGui::SetCursorPos(ImVec2(30,200));
+            	ImGui::BeginGroup();{ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 9 });
+				if (ImGui::WIDGETS_EXPERT_Tab("y","主页菜单", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 != 1)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 = 1; active = true; }
+        		if (ImGui::WIDGETS_EXPERT_Tab("D","功能菜单", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 != 2)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 = 2; active = true; }
+        		if (ImGui::WIDGETS_EXPERT_Tab("F","配置调节", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 != 3)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 = 3; active = true; }
+        		if(ImGui::WIDGETS_EXPERT_Close("i","关闭悬浮窗", ImVec2(80, 80), true)){悬浮球 = true;悬浮窗 = false; 窗口状态 = true;}	
+        		ImGui::PopStyleVar();}ImGui::EndGroup( );
+//===============================================| 𝗧𝗔𝗕 𝗢𝗡𝗘  |======================≠=================//
+											ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 14, 7 });
+											if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 == 1){
+											static int 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 4;
+											ImGui::SetCursorPos(ImVec2(347.5,37.5));ImGui::BeginGroup();{     
+											if (ImGui::WIDGETS_EXPERT_Subtab("Best", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  != 4)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 4; active = true; }ImGui::SameLine();
+											ImGui::PopStyleVar();}ImGui::EndGroup( );
+											
+											if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  == 4){
+											ImGui::SetCursorPos( ImVec2( 335, 155 ) );
+                							ImGui::MenuChild( "主页面板", ImVec2(700, 530) );{
+                								ImGui::Text("设备分辨率: %dx%d", screen_x, screen_y);
+                                            ImGui::Text("ImGui: %0.2fFPS %0.2fms", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+                                            ImGui::Text("更新tg频道@BingYiBest666");
+                                            
+								        	
+											
+                                                ImGui::Text("游戏进程: %d", pid);
+                                                                         
+                                                            if(进程与模块)
+            {
+           // if (ImGui::Button("成功获取进程与模块",{-1,75}))   
+            if (ImGui::OptButton1("初始化", ImVec2(-1, 75), false))
+            { 
+            DrawInit();
+            }
+            }else{
+            //if (ImGui::Button("未获取进程与模块",{-1,75}))   
+             if (ImGui::OptButton1("初始化", ImVec2(-1, 75), false))
+            {    
+            DrawInit();
+            进程与模块 = true;
+            }
+            }
+            
+            if (ImGui::OptButton1("退出程序", ImVec2(-1, 75), false))
+            {
+            exit(0);
+            }
+  
+      
+       
+               
+            
+            
+                                            
+											}//3
+											}//2
+											}//1
+//=============================================| 𝗧𝗔𝗕 𝗧𝗪𝗢 |===================================================================================//
+
+
+
+
+
+if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 == 2){
+static int 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 1;
+											ImGui::SetCursorPos(ImVec2(347.5,37.5));ImGui::BeginGroup();{     
+											if (ImGui::WIDGETS_EXPERT_Subtab("绘图", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  != 1)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 1; active = true; }ImGui::SameLine();
+											if (ImGui::WIDGETS_EXPERT_Subtab("共享", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  != 2)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 2; active = true; }ImGui::SameLine();
+											if (ImGui::WIDGETS_EXPERT_Subtab("卡密与录制", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  != 3)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 3; active = true; }ImGui::SameLine();
+										//	if (ImGui::WIDGETS_EXPERT_Subtab("退出", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕 != 4)) { exit(0);}
+ImGui::PopStyleVar();}ImGui::EndGroup( );
+
+
+//=====𝗦𝗨𝗕𝗧𝗔𝗕 𝗢𝗡𝗘
+if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  == 1){
+								        	ImGui::SetCursorPos( ImVec2( 335, 155 ) );
+                							ImGui::MenuChild( "绘图", ImVec2(350, 355) );{
+                							
+                							  ImGui::SliderFloat("上帝视角", &shangdi,0,3,"%.2f",1);
+                							  ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("视距开关", &上帝);
+										
+                							          if(huitu==0){
+            if (ImGui::OptButton1("一键开启", ImVec2(-1, 75), false))
+           {
+           
+           huitu=1;血量=1;地图=1;射线=1;方框=1;野怪=1;兵线=1;方框技能=1;顶上技能=1;野血=1;框技=1;框头=1;回城=1;技陷=1;
+           }
+          }else{
+          if (ImGui::OptButton1("一键关闭", ImVec2(-1, 75), false))
+          {
+          huitu=0;血量=0;地图=0;射线=0;方框=0;野怪=0;兵线=0;方框技能=0;顶上技能=0;眼位=0;框技=0;框头=0;回城=0;技陷=0;
+          }
+          }
+          
+
+          
+               if (ImGui::OptButton1("截图", ImVec2(-1, 75), false))
+          	 {
+          	 system("su -c screencap -p /sdcard/截屏.jpg");
+          	 }
+               
+                    
+                    
+           
+                							}ImGui::EndChild( );
+                							
+ImGui::SetCursorPos( ImVec2( 335, 565 ) );
+ImGui::MenuChild( "技能", ImVec2(350, 110) );{
+ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("技陷", &技陷);
+ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("方框技能", &方框技能);
+	ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("顶上技能", &顶上技能);
+}ImGui::EndChild( );
+
+                							ImGui::SetCursorPos( ImVec2( 700, 155 ) );
+                							ImGui::MenuChild( "选项", ImVec2( 350, 520) );{
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("血量", &血量);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+											ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("地图", &地图);
+											ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("射线", &射线);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("方框", &方框);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("野怪", &野怪);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("兵线", &兵线);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("眼位", &眼位);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("框技", &框技);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("框头", &框头);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("回城", &回城);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							
+                						
+                							
+											}ImGui::EndChild( );
+										
+												
+												}
+//========𝗦𝗨𝗕𝗧𝗔𝗕 𝗧𝗪𝗢
+if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  == 2){
+												ImGui::SetCursorPos( ImVec2( 335, 155 ) );
+                								ImGui::MenuChild( "屏幕", ImVec2(350, 60) );{
+												ImGui::Text("设备分辨率: %dx%d", screen_x, screen_y);
+												}ImGui::EndChild( );
+ImGui::SetCursorPos( ImVec2( 335, 265 ) );
+ImGui::MenuChild( "共享", ImVec2(350, 190) );{
+          /* if(共享==false){
+            if (ImGui::OptButton1("一键开启共享", ImVec2(-1, 75), false))
+           {
+        ESPMenu.显示头像 = true;
+        ESPMenu.野怪计时 = true;
+        ESPMenu.显示兵线 = true;
+        ESPMenu.是否开启共享 = true;
+        共享=true;
+           }
+          }else{
+          if (ImGui::OptButton1("一键关闭共享", ImVec2(-1, 75), false))
+          {
+          ESPMenu.显示头像 = false;
+        ESPMenu.野怪计时 = false;
+        ESPMenu.显示兵线 = false;
+        ESPMenu.是否开启共享 = false;
+        共享=false;
+          }
+          }*/
+
+}ImGui::EndChild( );
+												ImGui::SetCursorPos( ImVec2( 335, 505 ) );
+                								ImGui::MenuChild( "共享公告/共享功能暂时关闭", ImVec2(350, 170) );{
+                						/*		ImGui::BulletText("您的共享房间号:%s",imei);
+                                                ImGui::BulletText("网址网页:38.55.232.191");*/
+                								
+											//	ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("雷达图", &a);
+												//ImGui::SliderInt("雷达.X", &Config.RadarX, 1.7500f, 10.0f);
+											//	ImGui::SliderInt("雷达Y", &Config.RadarY, 2.2f, 100.0f);
+												}ImGui::EndChild( );
+												
+												
+                                            ImGui::SetCursorPos( ImVec2( 700, 155 ) );
+                                            ImGui::MenuChild( "共享选项", ImVec2( 335, 520 ) );{
+                                            ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("开启共享", &ESPMenu.是否开启共享);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                                            ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("头像显示", &ESPMenu.显示头像);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("野怪计时", &ESPMenu.野怪计时);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("兵线显示", &ESPMenu.显示兵线);
+                							ImGui::Separator();
+                							ImGui::ItemSize(ImVec2(0, 2));
+                							
+}ImGui::EndChild( );
+}
+
+if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  == 3){
+
+ImGui::SetCursorPos( ImVec2( 335, 155 ) );
+                                                ImGui::MenuChild( "录屏", ImVec2(350, 330) );{
+                                                ImGui::SliderInt("自定义录制秒数", &录屏时长, 1, 360);
+										if (ImGui::OptButton1("开始录制", ImVec2(-1, 75), false))
+											 {
+											if (!isRecording.load()) {
+											isRecording.store(true);
+											recordingTimeElapsed.store(0); // 开始时重置时间
+											std::thread([](int 录屏时长) {
+											// 非阻塞式开始录制
+											std::string command = "screenrecord --time-limit " + std::to_string(录屏时长) + " /sdcard/Best录制.mp4 &";
+											system(command.c_str());
+
+											for (int i = 0; i < 录屏时长 && isRecording.load(); ++i) {
+											std::this_thread::sleep_for(std::chrono::seconds(1));
+											recordingTimeElapsed.fetch_add(1);
+											}
+
+											isRecording.store(false);
+											}, 录屏时长).detach();
+											}
+											}
+											if ((ImGui::OptButton1("关闭录制", ImVec2(-1, 75), false)) && isRecording.load()) {
+											system("pkill -l SIGINT screenrecord");
+											isRecording.store(false);
+											}
+				                       
+                                                }ImGui::EndChild( );
+                                                
+ImGui::SetCursorPos( ImVec2( 700, 155 ) );
+ImGui::MenuChild( "卡密配置", ImVec2(350, 230) );{
+ImGui::BulletText("卡密: %s", fileContent2.c_str());
+ImGui::BulletText("设备码: %s", fileContent1.c_str());
+ImGui::BulletText("卡密到期时间: %s", fileContent3.c_str());
+}ImGui::EndChild( );
+                                                ImGui::SetCursorPos( ImVec2( 335, 535 ) );
+                                                ImGui::MenuChild( "2", ImVec2(350, 140) );{
+                                               
+                                                }ImGui::EndChild( );
+ImGui::SetCursorPos( ImVec2( 700, 435) );
+ImGui::MenuChild( "3", ImVec2(350, 240) );{
+
+}ImGui::EndChild( );
+
+
+}ImGui::EndChild( );
+
+}
+
+
+//================𝗦𝗨𝗕𝗧𝗔𝗕 𝗧𝗛𝗥𝗘𝗘
+//ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 14, 7 });
+if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗  == 3){
+static int 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 5;
+ImGui::SetCursorPos(ImVec2(347.5,37.5));ImGui::BeginGroup();{     
+			if (ImGui::WIDGETS_EXPERT_Subtab("绘图调整", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  != 5)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  = 4; active = true; }ImGui::SameLine();
+			ImGui::PopStyleVar();}ImGui::EndGroup( );
+			if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  == 5){
+											ImGui::SetCursorPos( ImVec2( 335, 155 ) );
+											ImGui::MenuChild( "绘图调整", ImVec2(350, 520) );{
+										
+											
+   if(ImGui::SliderInt("头像X", &SmallMapX,-300,300,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", SmallMapX);
+        写出文件("/storage/emulated/0/Best/小x1",urlls);}
+        if(ImGui::SliderInt("头像Y", &SmallMapY,-300,300,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", SmallMapY);
+        
+        写出文件("/storage/emulated/0/Best/小y1",urlls);}
+                      if(ImGui::SliderInt("实体X", &SmallHPX,-300,300,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", SmallHPX);
+        
+        写出文件("/storage/emulated/0/Best/大x1",urlls);}
+                      if(ImGui::SliderInt("实体Y", &SmallHPY,-300,300,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", SmallHPY);
+        
+        写出文件("/storage/emulated/0/Best/大y1",urlls);}
+                      
+                      
+       if(ImGui::SliderInt("技能左右", &jinenglanzX,-2000,2000,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", jinenglanzX);
+        
+        写出文件("/storage/emulated/0/Best/技能栏左右1",urlls);}
+        
+        if(ImGui::SliderInt("技能上下", &jinenglanzY,-500,500,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", jinenglanzY);
+        
+        写出文件("/storage/emulated/0/Best/技能栏上下1",urlls);}
+        
+        
+      if(ImGui::SliderInt("头像大小", &touxiangdaxiao,-50,50,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", touxiangdaxiao);
+        
+        写出文件("/storage/emulated/0/Best/头像大小",urlls);}
+      if(ImGui::SliderInt("血量大小", &xiaodituxue,-50,50,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", xiaodituxue);
+        
+        写出文件("/storage/emulated/0/Best/血量大小",urlls);}
+      if(ImGui::SliderInt("头像间隔", &jiange,-100,100,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", jiange);
+        
+        写出文件("/storage/emulated/0/Best/头像间隔",urlls);}
+											
+											
+                							
+												}ImGui::EndChild( );
+												
+												
+
+                                            ImGui::SetCursorPos( ImVec2( 700, 155 ) );
+                							ImGui::MenuChild( "共享调整", ImVec2( 350, 520) );{
+                								if(ImGui::SliderInt("共享左右调整", &ESPMenu.小地图左右调整,-150,300)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.小地图左右调整);
+        写出文件("/storage/emulated/0/Best/共享左右调整",urlls);}
+        	if(ImGui::SliderInt("共享上下调整", &ESPMenu.小地图上下调整,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.小地图上下调整);
+        写出文件("/storage/emulated/0/Best/共享上下调整",urlls);}
+        if(ImGui::SliderInt("共享野怪左右调整", &ESPMenu.野怪左右调整,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.野怪左右调整);
+        写出文件("/storage/emulated/0/Best/共享野怪左右调整",urlls);}
+                if(ImGui::SliderInt("共享野怪上下调整", &ESPMenu.野怪上下调整,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.野怪上下调整);
+        写出文件("/storage/emulated/0/Best/共享野怪上下调整",urlls);}
+                if(ImGui::SliderInt("共享兵线左右调整", &ESPMenu.兵线左右调整,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.兵线左右调整);
+        写出文件("/storage/emulated/0/Best/共享兵线左右调整",urlls);}
+                if(ImGui::SliderInt("共享分辨率x调整", &ESPMenu.分辨率X,1000,4000)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.分辨率X);
+        写出文件("/storage/emulated/0/Best/共享分辨率x调整",urlls);}
+                							
+                							
+                						
+                							
+											}ImGui::EndChild( );
+												
+											
+												
+												}
+												}
+												
+//=============================================| 𝗧𝗔𝗕 𝗧𝗪𝗢 |===================================================================================//
+
+
+//=============================================| 𝗧𝗔𝗕 𝗧𝗛𝗥𝗘𝗘 |========================================================================================//
+
+                }
+                }
+                //}
+				//}
+                ImGui::End;
+                DrawPlayer();
+                ImGuiIO &io = ImGui::GetIO();
+                glViewport(0.0f, 0.0f, (int) io.DisplaySize.x, (int) io.DisplaySize.y);
+                glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                glClear(GL_COLOR_BUFFER_BIT); // GL_DEPTH_BUFFER_BIT
+                glFlush();
+                if (display == EGL_NO_DISPLAY) {
+                    return;
+                }
+                 
+                
+                ImGui::Render();
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+                eglSwapBuffers(display, surface);
+                }
+
+
+void shutdown(){
+    if (!g_Initialized){
+        return;
+    }
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplAndroid_Shutdown();
+    ImGui::DestroyContext();
+    if (display != EGL_NO_DISPLAY){
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        if (context != EGL_NO_CONTEXT){
+            eglDestroyContext(display, context);
+        }
+        if (surface != EGL_NO_SURFACE){
+            eglDestroySurface(display, surface);
+        }
+        eglTerminate(display);
+    }
+    display = EGL_NO_DISPLAY;
+    context = EGL_NO_CONTEXT;
+    surface = EGL_NO_SURFACE;
+    ANativeWindow_release(native_window);
+}
+
+//由Tomatosauce移植
+//由Tomatosauce移植
+//由Tomatosauce移植
