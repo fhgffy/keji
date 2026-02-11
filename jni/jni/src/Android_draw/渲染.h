@@ -2,6 +2,7 @@
 #include "结构体.h"
 //#include "自瞄.h"
 #include "封装绘图.h"
+#include "offsets.h"
 
 #include <iostream>
 #include <thread>
@@ -112,12 +113,12 @@ void DrawInit(){
       
 int 静态数据(){
   
-    坐标模块 = Driver->read<uint64_t>(libGame_basebss + 0x195968);
- 
-    真实坐标 = Driver->read<uint64_t>(libGame_basebss + 0x13A0F0);
- 
-    真实坐标第一层 = Driver->read<uint64_t>(真实坐标 + 0x220);
-    真实坐标第二层 = Driver->read<uint64_t>(真实坐标第一层 + 0x78);
+    坐标模块 = Driver->read<uint64_t>(libGame_basebss + OFF_坐标模块);
+
+    真实坐标 = Driver->read<uint64_t>(libGame_basebss + OFF_真实坐标);
+
+    真实坐标第一层 = Driver->read<uint64_t>(真实坐标 + OFF_真实坐标_一层);
+    真实坐标第二层 = Driver->read<uint64_t>(真实坐标第一层 + OFF_真实坐标_二层);
     
     return 0;
 }
@@ -168,15 +169,15 @@ void DrawPlayer()
 
 
     //矩阵数据
-    long temp = Driver->读取指针(lil2cpp_basebss + 0xC45DD0);//0x74E30
+    long temp = Driver->读取指针(lil2cpp_basebss + OFF_矩阵基址);//0x74E30
     //printf("矩阵基址少一层%lx\n",temp);
-    MatrixAddress = Driver->读取指针(Driver->读取指针(Driver->读取指针(temp + 0xb8) + 0x0) + 0x10) + 0x100;
+    MatrixAddress = Driver->读取指针(Driver->读取指针(Driver->读取指针(temp + OFF_矩阵_一层) + OFF_矩阵_二层) + OFF_矩阵_三层) + OFF_矩阵_数据;
     // printf("矩阵基址%lx\n",MatrixAddress);
     isGames = Driver->读取浮点数(MatrixAddress);
     foeComp = isGames > 0 ? 2 : 1;
 
     rientation = foeComp == 1 ? 1 : -1;
- if (Driver->读取整数(libGame_basebss + 0x20DBC) != 0) {
+ if (Driver->读取整数(libGame_basebss + OFF_游戏状态) != 0) {
     if (isGames > 0.0f) {
 
         rientation = 1;
@@ -207,13 +208,13 @@ void DrawPlayer()
         dataTable.Matrix[i] = Driver->读取浮点数(MatrixAddress + i * 4);
     }//矩阵
 
-    long bingxiang1 = Driver->read<uint64_t>(坐标模块 + 0x1F0);
+    long bingxiang1 = Driver->read<uint64_t>(坐标模块 + OFF_坐标模块_bx1);
 
 
     //人物数组
-    long temp1 = Driver->读取指针(libGame_basebss + 0x383A0);
-    long 啥 = temp1 + 0x120;
-    long bingxiang8 = Driver->读取指针(Driver->读取指针(temp1 + 0x48) + 0xD8);
+    long temp1 = Driver->读取指针(libGame_basebss + OFF_人物数组);
+    long 啥 = temp1 + OFF_人物数组_啥;
+    long bingxiang8 = Driver->读取指针(Driver->读取指针(temp1 + OFF_人物数组_48) + OFF_人物数组_D8_bx8);
   //  long bingxiang1 = temp1 + 0x120;
   //  printf("数组 %p\n", bingxiang1);
     AroundNumbers = 10;
@@ -226,18 +227,18 @@ void DrawPlayer()
 
  
 
-      long 哦 = Driver->读取指针(Driver->读取指针(啥 + i * 0x18) + 0x68);
+      long 哦 = Driver->读取指针(Driver->读取指针(啥 + i * OFF_人物数组_步长) + OFF_人物数组_哦);
 
 
-           long bingxiang6 = Driver->read<uint64_t>(bingxiang1 + (i) * 0x1);
+           long bingxiang6 = Driver->read<uint64_t>(bingxiang1 + (i) * OFF_坐标遍历_步长);
      // std::cout << "bingxiang6 的值为: " << std::hex << bingxiang6 << std::endl;
-        long 真实坐标第三层 = Driver->read<uint64_t>(真实坐标第二层 + (j) * 0x1);
+        long 真实坐标第三层 = Driver->read<uint64_t>(真实坐标第二层 + (j) * OFF_坐标遍历_步长);
       
       
-         int 判断id1 = Driver->read<int>(真实坐标第三层 - 0xA8);
-	     int 判断id2 = Driver->read<int>(真实坐标第三层 - 0xA4);
-	     int 判断id3 = Driver->read<int>(真实坐标第三层 - 0xA0);
-	     int v2 = Driver->read<int>(bingxiang6 + 0x30);//英雄ID 判断范围
+         int 判断id1 = Driver->read<int>(真实坐标第三层 - OFF_判断id1);
+	     int 判断id2 = Driver->read<int>(真实坐标第三层 - OFF_判断id2);
+	     int 判断id3 = Driver->read<int>(真实坐标第三层 - OFF_判断id3);
+	     int v2 = Driver->read<int>(bingxiang6 + OFF_英雄ID);//英雄ID 判断范围
 	      
 	     
          
@@ -250,30 +251,30 @@ void DrawPlayer()
 	 
 	 
 	 
-	 int v2 = Driver->read<int>(bingxiang6 + 0x30);//判断1，2
+	 int v2 = Driver->read<int>(bingxiang6 + OFF_英雄ID);//判断1，2
  	  if (v2 >= 105 && v2 <= 600) {
- 	  	
- 	int v3 = Driver->read<int>(bingxiang6 + 0x308);//判断1，2	
+
+ 	int v3 = Driver->read<int>(bingxiang6 + OFF_英雄V3判断);//判断1，2
  	  	
 	 	if (v3 == 57668 || v3 == 54045 || v3 == 53395 || v3 ==56368 || v3 == 55757 || v3 ==-57673 || v3 == -53416 || v3 == -56379 || v3 == -53911 || v3 == -55764) {
      
       
-      int v1 = Driver->read<int>(bingxiang6 + 0x3C);//敌人
+      int v1 = Driver->read<int>(bingxiang6 + OFF_英雄阵营);//敌人
 	
 	if (v1 == foeComp) {
 
 
 
 
-        int zhengxing = Driver->读取整数(bingxiang6 + 0x3C);  //阵营
+        int zhengxing = Driver->读取整数(bingxiang6 + OFF_英雄阵营);  //阵营
 
-int 真的 = Driver->读取整数(哦 + 0x3C);
+int 真的 = Driver->读取整数(哦 + OFF_英雄阵营);
 
-        dataTable.heroTemp[i].Id = Driver->读取整数(bingxiang6 + 0x30);
+        dataTable.heroTemp[i].Id = Driver->读取整数(bingxiang6 + OFF_英雄ID);
         //printf("英雄id %d\n",dataTable.heroTemp[i].Id );
-        dataTable.heroTemp[i].Hp = Driver->读取整数(Driver->读取指针(bingxiang6 + 0x168) + 0x98);    // 当前血量
+        dataTable.heroTemp[i].Hp = Driver->读取整数(Driver->读取指针(bingxiang6 + OFF_英雄血量指针) + OFF_当前血量);    // 当前血量
        // printf("当前血量 %d\n",dataTable.heroTemp[i].Hp);
-        dataTable.heroTemp[i].MaxHp = Driver->读取整数(Driver->读取指针(bingxiang6 + 0x168) + 0xa0);  //最大血量
+        dataTable.heroTemp[i].MaxHp = Driver->读取整数(Driver->读取指针(bingxiang6 + OFF_英雄血量指针) + OFF_最大血量);  //最大血量
         
      
         
@@ -293,7 +294,7 @@ ImGui::GetForegroundDrawList()->AddText(ImVec2(pos_x, pos_y), Paint_green, "    
    
    }
         
-        long zuobiao = Driver->read<uint64_t>(真实坐标第三层 +0x30);
+        long zuobiao = Driver->read<uint64_t>(真实坐标第三层 + OFF_坐标遍历_zuobiao);
 
 				
 			//	人物坐标=getcoor(bingxiang6);
@@ -306,31 +307,31 @@ ImGui::GetForegroundDrawList()->AddText(ImVec2(pos_x, pos_y), Paint_green, "    
         printf("x %f\n", dataTable.heroTemp[i].coord.X);
         printf("y %f\n", dataTable.heroTemp[i].coord.Y);
         */
-        dataTable.heroTemp[i].coord.X = (float)Driver->读取整数(zuobiao + 0xF8);    //x坐标
+        dataTable.heroTemp[i].coord.X = (float)Driver->读取整数(zuobiao + OFF_坐标X);    //x坐标
         //0x240) +0x118)+0x10)+0x0)+0x48)+0x0);
-        dataTable.heroTemp[i].coord.Y = (float)Driver->读取整数(zuobiao + 0x100);  //y坐标
+        dataTable.heroTemp[i].coord.Y = (float)Driver->读取整数(zuobiao + OFF_坐标Y);  //y坐标
      /*
    printf("x %f\n", dataTable.heroTemp[i].coord.X);
         printf("y %f\n", dataTable.heroTemp[i].coord.Y);
         */
         
-        人物大招最大CD = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x108) + 0x100) + 0xDC) / 8192000;                   //技能
-        dataTable.heroTemp[i].HC = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x168) + 0x118) + 0x20);
+        人物大招最大CD = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能3_一层) + OFF_技能_CD二层) + OFF_技能_大招DC) / OFF_技能_CD除数;                   //技能
+        dataTable.heroTemp[i].HC = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_回城_一层) + OFF_回城_二层) + OFF_回城_值);
         //回城
-        dataTable.heroTemp[i].Space1 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xD8) + 0x100) + 0xD4) / 8192000;                  //技能0x148) + 0xD8) + 0x100) + 0xD4) 
-        dataTable.heroTemp[i].TB1 = dataTable.heroTemp[i].Id * 100 + 10; //Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xD8) + 0x60) + 0x10);
-        dataTable.heroTemp[i].Space2 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xF0) + 0x100) + 0xD4) / 8192000;                  //技能0x148) + 0xF0) + 0x100) + 0xD4
-        dataTable.heroTemp[i].TB2 = dataTable.heroTemp[i].Id * 100 + 20; //Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xF0) + 0x60) + 0x10);
-        dataTable.heroTemp[i].Space3 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x108) + 0x100) + 0xD4) / 8192000;                 //  0x148) + 0x108) + 0x100) + 0xD4)
-        dataTable.heroTemp[i].TB3 = dataTable.heroTemp[i].Id * 100 + 30; //Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x108) + 0x60) + 0x10);
-        dataTable.heroTemp[i].Skill = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x150) + 0x150) + 0xf8) + 0x3c)/ 8192000;                  //技能技能0x148) + 0x150) + 0x100) + 0xD4
-       // 
+        dataTable.heroTemp[i].Space1 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能1_一层) + OFF_技能_CD二层) + OFF_技能_CD值) / OFF_技能_CD除数;                  //技能1
+        dataTable.heroTemp[i].TB1 = dataTable.heroTemp[i].Id * 100 + 10;
+        dataTable.heroTemp[i].Space2 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能2_一层) + OFF_技能_CD二层) + OFF_技能_CD值) / OFF_技能_CD除数;                  //技能2
+        dataTable.heroTemp[i].TB2 = dataTable.heroTemp[i].Id * 100 + 20;
+        dataTable.heroTemp[i].Space3 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能3_一层) + OFF_技能_CD二层) + OFF_技能_CD值) / OFF_技能_CD除数;                 //技能3
+        dataTable.heroTemp[i].TB3 = dataTable.heroTemp[i].Id * 100 + 30;
+        dataTable.heroTemp[i].Skill = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_召唤基址) + OFF_召唤_一层) + OFF_召唤_二层_CD) + OFF_召唤_CD值) / OFF_技能_CD除数;                  //召唤师技能
+       //
         //回城
       //  float hp2 = dataTable.heroTemp[i].Hp * 100 / dataTable.heroTemp[i].MaxHp;
 
 
 
-        dataTable.heroTemp[i].TB4 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x150) + 0x150) + 0xC8) + 0x10);  //0x148) + 0x150) + 0x60) + 0x10);
+        dataTable.heroTemp[i].TB4 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_召唤基址) + OFF_召唤_一层) + OFF_召唤_二层_图标) + OFF_召唤_图标值);  //召唤师技能图标
       //  int 斩杀HP = (int)(dataTable.heroTemp[i].MaxHp-dataTable.heroTemp[i].Hp)*0.155;          
 
         if (zhengxing == foeComp)
@@ -345,9 +346,9 @@ ImGui::GetForegroundDrawList()->AddText(ImVec2(pos_x, pos_y), Paint_green, "    
             map_coord.Y = map_coord.Y + SmallHPY;
             float hp1 = dataTable.heroTemp[i].Hp * 100 / dataTable.heroTemp[i].MaxHp;
             //补充内容
-            dataTable.heroTemp[i].HC = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x168) + 0x118) + 0x20);
-            dataTable.heroTemp[i].Id = Driver->读取整数(bingxiang6 + 0x30);
-            zyz = Driver->读取整数(bingxiang6 + 0x3C);  //阵营           
+            dataTable.heroTemp[i].HC = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_回城_一层) + OFF_回城_二层) + OFF_回城_值);
+            dataTable.heroTemp[i].Id = Driver->读取整数(bingxiang6 + OFF_英雄ID);
+            zyz = Driver->读取整数(bingxiang6 + OFF_英雄阵营);  //阵营           
 
 
 
@@ -408,34 +409,34 @@ ImGui::GetForegroundDrawList()->AddText(ImVec2(pos_x, pos_y), Paint_green, "    
    
                        if (真的 == 1) {
             视野 = Driver->读取整数(
-                Driver->读取指针(Driver->读取指针(哦 + 0x260) + 0x68) + 0x18);
+                Driver->读取指针(Driver->读取指针(哦 + OFF_视野基址) + OFF_视野_一层) + OFF_视野_己方);
             自身视野 = Driver->读取整数(
                 Driver->读取指针(
-                    Driver->读取指针(bingxiang8 + 0x260) + 0x68) +
-                0x38);
+                    Driver->读取指针(bingxiang8 + OFF_视野基址) + OFF_视野_一层) +
+                OFF_视野_敌方);
           } else {
             视野 = Driver->读取整数(
-                Driver->读取指针(Driver->读取指针(哦 + 0x260) + 0x68) + 0x38);
+                Driver->读取指针(Driver->读取指针(哦 + OFF_视野基址) + OFF_视野_一层) + OFF_视野_敌方);
             自身视野 = Driver->读取整数(
                 Driver->读取指针(
-                    Driver->读取指针(bingxiang8 + 0x260) + 0x68) +
-                0x18);
+                    Driver->读取指针(bingxiang8 + OFF_视野基址) + OFF_视野_一层) +
+                OFF_视野_己方);
           }
 
 
             if (aa > 0) {
 
-                人物大招最大CD = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x108) + 0x100) + 0xDC) / 8192000;                   //技能
-                dataTable.heroTemp[i].HC = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x168) + 0x118) + 0x20);
+                人物大招最大CD = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能3_一层) + OFF_技能_CD二层) + OFF_技能_大招DC) / OFF_技能_CD除数;                   //技能
+                dataTable.heroTemp[i].HC = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_回城_一层) + OFF_回城_二层) + OFF_回城_值);
                 //回城
-                dataTable.heroTemp[i].Space1 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xD8) + 0x100) + 0xD4) / 8192000;                  //技能
-                dataTable.heroTemp[i].TB1 = dataTable.heroTemp[i].Id * 100 + 10; //Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xD8) + 0x60) + 0x10);
-                dataTable.heroTemp[i].Space2 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xF0) + 0x100) + 0xD4) / 8192000;                  //技能
-                dataTable.heroTemp[i].TB2 = dataTable.heroTemp[i].Id * 100 + 20; //Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0xF0) + 0x60) + 0x10);
-                dataTable.heroTemp[i].Space3 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x108) + 0x100) + 0xD4) / 8192000;                 //技能
-                dataTable.heroTemp[i].TB3 = dataTable.heroTemp[i].Id * 100 + 30; //Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x148) + 0x108) + 0x60) + 0x10);
-                dataTable.heroTemp[i].Skill = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x150) + 0x150) + 0xf8) + 0x3c) / 8192000;                  //技能
-                dataTable.heroTemp[i].TB4 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + 0x150) + 0x150) + 0xC8) + 0x10);
+                dataTable.heroTemp[i].Space1 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能1_一层) + OFF_技能_CD二层) + OFF_技能_CD值) / OFF_技能_CD除数;                  //技能
+                dataTable.heroTemp[i].TB1 = dataTable.heroTemp[i].Id * 100 + 10;
+                dataTable.heroTemp[i].Space2 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能2_一层) + OFF_技能_CD二层) + OFF_技能_CD值) / OFF_技能_CD除数;                  //技能
+                dataTable.heroTemp[i].TB2 = dataTable.heroTemp[i].Id * 100 + 20;
+                dataTable.heroTemp[i].Space3 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_技能基址) + OFF_技能3_一层) + OFF_技能_CD二层) + OFF_技能_CD值) / OFF_技能_CD除数;                 //技能
+                dataTable.heroTemp[i].TB3 = dataTable.heroTemp[i].Id * 100 + 30;
+                dataTable.heroTemp[i].Skill = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_召唤基址) + OFF_召唤_一层) + OFF_召唤_二层_CD) + OFF_召唤_CD值) / OFF_技能_CD除数;                  //技能
+                dataTable.heroTemp[i].TB4 = Driver->读取整数(Driver->读取指针(Driver->读取指针(Driver->读取指针(bingxiang6 + OFF_召唤基址) + OFF_召唤_一层) + OFF_召唤_二层_图标) + OFF_召唤_图标值);
 
 
 
@@ -984,7 +985,7 @@ draw_list->AddCircleFilled(center, radius, IM_COL32(0, 0, 0, 90));
 
 
             if (上帝) {
-		         long sdaddr = Driver->读取指针(Driver->读取指针(lil2cpp_base+0xE750)+0xB8)+0x274;
+		         long sdaddr = Driver->读取指针(Driver->读取指针(lil2cpp_base+OFF_上帝_一层)+OFF_上帝_二层)+OFF_上帝_写入;
 		         Driver->write<float>(sdaddr,shangdi);//自定义数值
 		         }
     uint64_t BuffAddress;//buff数量地址
@@ -1007,30 +1008,30 @@ draw_list->AddCircleFilled(center, radius, IM_COL32(0, 0, 0, 90));
 int maxyghp;
         if (野怪) {
 
-    long temp2 = Driver->读取指针(libGame_basebss + 0x37D10);
-    BuffAddress = Driver->读取指针(Driver->读取指针(Driver->读取指针(temp2+0x3B0) + 0x88) + 0x120);
-    野怪数组 = Driver->读取指针(Driver->读取指针(Driver->读取指针(temp2+0x3B0) + 0x88) + 0x120);//
+    long temp2 = Driver->读取指针(libGame_basebss + OFF_野怪基址);
+    BuffAddress = Driver->读取指针(Driver->读取指针(Driver->读取指针(temp2+OFF_野怪_一层) + OFF_野怪_二层) + OFF_野怪_三层);
+    野怪数组 = Driver->读取指针(Driver->读取指针(Driver->读取指针(temp2+OFF_野怪_一层) + OFF_野怪_二层) + OFF_野怪_三层);//
     for (int i = 0; i < 23; i++) {
-        dataTable.pve[i].maxcd =  Driver->读取指针((u_long)(BuffAddress + i * 0x18)) + 0x1e4;
-        dataTable.pve[i].cd = Driver->读取指针((u_long)(BuffAddress + i * 0x18)) + 0x240;
-        dataTable.pve[i].cc = Driver->读取指针((u_long)(BuffAddress + i * 0x18));
-        
-        dataTable.pve[i].id = dataTable.pve[i].cc + 0xC0;
-        long int 实体指针=Driver->读取指针(dataTable.pve[i].cc+0x398);
-        dataTable.pve[i].X = Driver->读取指针(Driver->读取指针(Driver->读取指针(实体指针+0x230)+0xf0)+0x10)+0x0;
-        dataTable.pve[i].Y = Driver->读取指针(Driver->读取指针(Driver->读取指针(实体指针+0x230)+0xf0)+0x10)+0x8;
-        dataTable.pve[i].hp = Driver->读取指针(实体指针 + 0x168) + 0x98;
+        dataTable.pve[i].maxcd =  Driver->读取指针((u_long)(BuffAddress + i * OFF_野怪_步长)) + OFF_野怪_maxcd;
+        dataTable.pve[i].cd = Driver->读取指针((u_long)(BuffAddress + i * OFF_野怪_步长)) + OFF_野怪_cd;
+        dataTable.pve[i].cc = Driver->读取指针((u_long)(BuffAddress + i * OFF_野怪_步长));
+
+        dataTable.pve[i].id = dataTable.pve[i].cc + OFF_野怪_id;
+        long int 实体指针=Driver->读取指针(dataTable.pve[i].cc+OFF_野怪_实体指针);
+        dataTable.pve[i].X = Driver->读取指针(Driver->读取指针(Driver->读取指针(实体指针+OFF_野怪_坐标一层)+OFF_野怪_坐标二层)+OFF_野怪_坐标三层)+0x0;
+        dataTable.pve[i].Y = Driver->读取指针(Driver->读取指针(Driver->读取指针(实体指针+OFF_野怪_坐标一层)+OFF_野怪_坐标二层)+OFF_野怪_坐标三层)+0x8;
+        dataTable.pve[i].hp = Driver->读取指针(实体指针 + OFF_野怪_血量指针) + OFF_野怪_血量;
         dataTable.pveTemp[i].maxcd = Driver->read<int>(dataTable.pve[i].maxcd) / 1000;
-        int 固定坐标X = Driver->read<int>(dataTable.pve[i].cc + 0x2b8);
-        int 固定坐标Y = Driver->read<int>(dataTable.pve[i].cc + 0x2C0);
+        int 固定坐标X = Driver->read<int>(dataTable.pve[i].cc + OFF_野怪_固定坐标X);
+        int 固定坐标Y = Driver->read<int>(dataTable.pve[i].cc + OFF_野怪_固定坐标Y);
         float pvegdX = (float)(固定坐标X * rientation * Wwra / 50000.0f + Wwra);
         float pvegdY = (float)(固定坐标Y * rientation * Wwra / 50000.0f * -1 + Wwra);
         //共享全源数据
-        bbuff1 = Driver->读取指针(野怪数组 + i * 0x18);
-        buffid = Driver->读取整数(bbuff1 + 0xC0);
-        ygtime = Driver->读取整数(bbuff1 + 0x238) / 1000;
-        xxx1 = Driver->读取整数(bbuff1 + 0x2b0);
-        yyy1 = Driver->读取整数(bbuff1 + 0x2b8);
+        bbuff1 = Driver->读取指针(野怪数组 + i * OFF_野怪_步长);
+        buffid = Driver->读取整数(bbuff1 + OFF_野怪_id);
+        ygtime = Driver->读取整数(bbuff1 + OFF_野怪_时间) / 1000;
+        xxx1 = Driver->读取整数(bbuff1 + OFF_野怪_传输X);
+        yyy1 = Driver->读取整数(bbuff1 + OFF_野怪_传输Y);
         buffx = xxx1 * rientation * WwrShare / 50000.0f + WwrShare;
         buffy = yyy1 * rientation * WwrShare / 50000.0f * -1 + WwrShare;
         //传输野怪数据
@@ -1050,7 +1051,7 @@ int maxyghp;
         yg_coord = CalMatrixMem(dataTable.pveTemp[i].coord, dataTable.Matrix);
         dataTable.pveTemp[i].id = Driver->读取整数(dataTable.pve[i].id);
         dataTable.pveTemp[i].hp = Driver->读取整数(dataTable.pve[i].hp);
-        maxyghp=Driver->读取整数(dataTable.pve[i].hp+0x8);      
+        maxyghp=Driver->读取整数(dataTable.pve[i].hp+OFF_野怪_血量最大);      
 
         //绘制全局野怪血量
         int hpyg=dataTable.pveTemp[i].hp;
@@ -1078,8 +1079,8 @@ int maxyghp;
 
         int 野怪cd = Driver->读取整数(dataTable.pve[i].cd) / 1000;
         if (野怪cd > 90) { continue; }
-        int 野怪屏幕X = ((float)Driver->读取整数(dataTable.pve[i].cc + 0x2B0)) * rientation * Wwr2 / 50000 + Wwr2;
-        int 野怪屏幕Y = ((float)Driver->读取整数(dataTable.pve[i].cc + 0x2B8)) * rientation * Wwr2 / 50000 * -1 + Wwr2;
+        int 野怪屏幕X = ((float)Driver->读取整数(dataTable.pve[i].cc + OFF_野怪_传输X)) * rientation * Wwr2 / 50000 + Wwr2;
+        int 野怪屏幕Y = ((float)Driver->读取整数(dataTable.pve[i].cc + OFF_野怪_传输Y)) * rientation * Wwr2 / 50000 * -1 + Wwr2;
 
         if (dataTable.pveTemp[i].cd == 0 || dataTable.pveTemp[i].cd == dataTable.pveTemp[i].maxcd || dataTable.pveTemp[i].cd > 240 || dataTable.pveTemp[i].id == 166009 || dataTable.pveTemp[i].id == 1010333 || dataTable.pveTemp[i].id == 166018 || dataTable.pveTemp[i].id == 1010335 || dataTable.pveTemp[i].id == 166012 || dataTable.pveTemp[i].id == 1010334 || dataTable.pveTemp[i].id == 166022 || dataTable.pveTemp[i].id == 1010336 || dataTable.pveTemp[i].id == 1660221) {
         //166009/1010333/166018/1010335/166012/1010334/166022/1010336/1660221
@@ -1101,26 +1102,26 @@ int maxyghp;
     int bingx;
   //  int bingy;//兵线共享变量
 
-    long temp5 = Driver->读取指针(libGame_basebss + 0x195968);
+    long temp5 = Driver->读取指针(libGame_basebss + OFF_坐标模块);
 
-    BxAddress = Driver->读取指针(Driver->读取指针(temp5 + 0x138) + 0x108);
+    BxAddress = Driver->读取指针(Driver->读取指针(temp5 + OFF_兵线_一层) + OFF_兵线_二层);
     long cont = 0;
     for (int l = 0; l < 50; l++) {
       //  bxAddress = Driver->读取指针(BxAddress + (0x60 + l * 0x18));
-        bxAddress = Driver->读取指针(BxAddress + (l * 0x18));
-        int temp = Driver->读取整数(bxAddress + 0x3C);
-        int bxxl = Driver->read<int>(Driver->read<uint64_t>(bxAddress + 0x168) + 0x98);
+        bxAddress = Driver->读取指针(BxAddress + (l * OFF_兵线_步长));
+        int temp = Driver->读取整数(bxAddress + OFF_兵线_阵营);
+        int bxxl = Driver->read<int>(Driver->read<uint64_t>(bxAddress + OFF_兵线_血量指针) + OFF_兵线_血量);
         /*printf("兵线阵营%d\n",temp);
         printf("人物阵营%d\n",foeComp);*/
               if (temp == foeComp) {
                 
 
-                dataTable.CeTemp[cont].coord.X = (float)Driver->read<int>(Driver->read<uint64_t>(Driver->read<uint64_t>(Driver->read<uint64_t>(bxAddress + 0x2c0) + 0x30) + 0x10) + 0x0);
-                dataTable.CeTemp[cont].coord.Y = (float)Driver->read<int>(Driver->read<uint64_t>(Driver->read<uint64_t>(Driver->read<uint64_t>(bxAddress + 0x2c0) + 0x30) + 0x10) + 0x8);
-              
-              
-                dataTable.CeTemp[cont].hp =Driver->read<int>(Driver->read<uint64_t>(bxAddress + 0x168) + 0x98);
-                dataTable.CeTemp[cont].maxhp =Driver->read<int>(Driver->read<uint64_t>(bxAddress + 0x168) + 0xA0);
+                dataTable.CeTemp[cont].coord.X = (float)Driver->read<int>(Driver->read<uint64_t>(Driver->read<uint64_t>(Driver->read<uint64_t>(bxAddress + OFF_兵线_坐标基址) + OFF_兵线_坐标一层) + OFF_兵线_坐标二层) + 0x0);
+                dataTable.CeTemp[cont].coord.Y = (float)Driver->read<int>(Driver->read<uint64_t>(Driver->read<uint64_t>(Driver->read<uint64_t>(bxAddress + OFF_兵线_坐标基址) + OFF_兵线_坐标一层) + OFF_兵线_坐标二层) + 0x8);
+
+
+                dataTable.CeTemp[cont].hp =Driver->read<int>(Driver->read<uint64_t>(bxAddress + OFF_兵线_血量指针) + OFF_兵线_血量);
+                dataTable.CeTemp[cont].maxhp =Driver->read<int>(Driver->read<uint64_t>(bxAddress + OFF_兵线_血量指针) + OFF_兵线_血量最大);
                 
                 
                 
