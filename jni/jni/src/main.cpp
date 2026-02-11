@@ -1,7 +1,7 @@
 //微验网络验证//
 //如果是AIDE编译jni，请将原main.cpp删除，将此注入好的文件改成main.cpp
 
-电报@aadaili
+// 电报@aadaili
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

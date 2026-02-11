@@ -9,7 +9,7 @@ LOCAL_CPPFLAGS := -w -std=c++17
 
 LOCAL_C_INCLUDES +=$(LOCAL_PATH)/include
 LOCAL_C_INCLUDES +=$(LOCAL_PATH)/include/Android_draw
-LOCAL_C_INCLUDES +=$(LOCAL_PATH)/include/Android_read
+# LOCAL_C_INCLUDES +=$(LOCAL_PATH)/include/Android_read  # 目录不存在
 LOCAL_C_INCLUDES +=$(LOCAL_PATH)/include/Android_shm
 LOCAL_C_INCLUDES +=$(LOCAL_PATH)/include/Android_touch
 LOCAL_C_INCLUDES +=$(LOCAL_PATH)/include/ImGui
@@ -21,11 +21,11 @@ LOCAL_C_INCLUDES += $(LOCAL_C_INCLUDES:$(LOCAL_PATH)/%:=%)
 
 FILE_LIST += $(wildcard $(LOCAL_PATH)/src/*.c*)
 FILE_LIST += $(wildcard $(LOCAL_PATH)/src/Android_draw/*.c*)
-FILE_LIST += $(wildcard $(LOCAL_PATH)/src/Android_read/*.c*)
+# FILE_LIST += $(wildcard $(LOCAL_PATH)/src/Android_read/*.c*)  # 目录不存在
 FILE_LIST += $(wildcard $(LOCAL_PATH)/src/Android_shm/*.c*)
 FILE_LIST += $(wildcard $(LOCAL_PATH)/src/Android_touch/*.c*)
 FILE_LIST += $(wildcard $(LOCAL_PATH)/src/ImGui/*.c*)
-FILE_LIST += $(wildcard $(LOCAL_PATH)/src/native_surface/*.c*)
+# FILE_LIST += $(wildcard $(LOCAL_PATH)/src/native_surface/*.c*)  # 目录不存在
 LOCAL_SRC_FILES += $(FILE_LIST:$(LOCAL_PATH)/%=%)
 
 LOCAL_LDFLAGS += -lEGL -lGLESv2 -lGLESv3 -landroid -llog
