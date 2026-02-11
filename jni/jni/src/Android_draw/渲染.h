@@ -19,66 +19,72 @@ char imei[100] = "";//leixin666
 int 人物=12, 坐标 =880;
 int 自身视野=0;
 int 视野 = 0;
+/*===== 坐标解密功能 - 已注释 =====
 bool 坐标解密1=false;
 bool 坐标解密2=false;
 bool 坐标解密3 = false;
 bool 坐标解密4 = false;
+*/
 int 静态数据();
+/*===== 坐标解密变量 - 已注释 =====
 long cooroffest = 0;
 long coorpage = 0;
+*/
 long 真实坐标, 坐标模块, 真实坐标第一层, 真实坐标第二层;
+/*===== 坐标解密函数 getcoor() - 已注释 =====
 long getcoor(long addr)
 {
 if(坐标解密1){
-	
+
 	long 人物坐标=Driver->读取整数(Driver->读取整数(Driver->读取整数(Driver->读取整数(addr + 0x240) + 0x10)) + 0x10);
     long encrypt = 人物坐标&(~(4096 - 1));
   //  ImGui::GetForegroundDrawList()->AddText(ImVec2(0, 1080-30), Paint_green, "      当前坐标未加密");
-   
+
 if (encrypt == 人物坐标)
     {
             if (encrypt != coorpage && encrypt != 0 && cooroffest == 0){
             for (int i = 1; i <= 4096 * 2000; i++){
             long start = encrypt - 4096 * i;
             //long pointerValue= Driver->读取指针(start+0x55B8);
-         
-           if (Driver->读取整数(start + 0xF688) == encrypt){                  
+
+           if (Driver->读取整数(start + 0xF688) == encrypt){
                      long coor = start + 0xF690;
                      cooroffest = Driver->读取整数(coor) - encrypt + Driver->读取整数(coor +0x8);
                     // coorpage = encrypt;
                      break;
             }
-            
+
             if (Driver->读取整数(start + 0x55B8) == encrypt){
                      long coor = start + 0x55C0;
                      cooroffest = Driver->读取整数(coor) - encrypt + Driver->读取整数(coor +0x8);
                     // coorpage = encrypt;
                      break;
             }
-       }       
-             coorpage=encrypt; 
+       }
+             coorpage=encrypt;
     }
-            
+
 }
-         
-         
+
+
 
     if (encrypt == coorpage)
     {
         人物坐标=人物坐标+cooroffest;
         ImGui::GetForegroundDrawList()->AddText(ImVec2(0, 1080-30), Paint_red, "      当前坐标已被加密(方案一)");
     }else{
- 
- 
+
+
  ImGui::GetForegroundDrawList()->AddText(ImVec2(0, 1080-30), Paint_green, "      当前坐标未加密(方案一)");
- 
+
  }
    // printf("%p\n", (void*)(Driver->read<unsigned char>(人物坐标 + 0xD)));
-    
+
     return 人物坐标;
 	}
 	return 人物坐标;
 }
+===== 坐标解密函数 getcoor() 结束 =====*/
 
 
 void DrawInit(){
