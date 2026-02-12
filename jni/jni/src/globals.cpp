@@ -159,6 +159,7 @@ std::string fileContent3;
 // ---- 封装绘图.h 全局 ----
 int ret = -1;
 int socket_fd;
+bool socket_connected = false;
 struct sockaddr_in serveraddr;
 char buffer[MAX_BUFFER_SIZE];
 char homeBuffer[MAX_BUFFER_SIZE];

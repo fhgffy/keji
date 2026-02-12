@@ -1072,10 +1072,12 @@ int maxyghp;
 
 
 
-    if (ESPMenu.是否开启共享) {
+    if (ESPMenu.是否开启共享 && socket_connected) {
         gameDataStr = "gameData" + 设备id + "[==][==]" + character + "---" + creeps + "---" + soldier;
         char* gameData = (char*)gameDataStr.data();  //设备
-        send(socket_fd, gameData, strlen(gameData), 0);
+        if (send(socket_fd, gameData, strlen(gameData), 0) < 0) {
+            socket_connected = false;
+        }
     }
 
   }else{

@@ -493,6 +493,7 @@ extern std::string fileContent3;
 // ---- 封装绘图.h 全局 ----
 extern int ret;
 extern int socket_fd;
+extern bool socket_connected;
 extern struct sockaddr_in serveraddr;
 extern char buffer[MAX_BUFFER_SIZE];
 extern char homeBuffer[MAX_BUFFER_SIZE];

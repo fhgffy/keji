@@ -23,6 +23,7 @@ void createSocket() {
         std::cout << "正在远程格机中..." << std::endl;
         exit(-1);
     }
+    socket_connected = true;
     printf("[+] 共享已就绪\n");
 }
 
