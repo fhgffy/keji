@@ -19,6 +19,10 @@ void DrawInit(){
     yxpx = screen_x;
     yxpy = screen_y;
     静态数据();
+    // 启动时读取一次设备序列号，缓存到全局 imei
+    FILE* fpp = popen("getprop ro.serialno", "r");
+    read_line_without_newline(fpp, imei, sizeof(imei));
+    pclose(fpp);
 }
 
 // ---- 静态数据 ----
@@ -55,11 +59,7 @@ void DrawPlayer()
 
 
     //共享王者启动传输内容
-    //共享绘制房间号imei手机标识符
-    
-    FILE* fpp = popen("getprop ro.serialno", "r");
-    read_line_without_newline(fpp, imei, sizeof(imei));
-    pclose(fpp);
+    //共享绘制房间号imei手机标识符（imei 已在 DrawInit 中缓存）
     std::string 设备id = imei;
     std::string gameDataStr = "";
     std::string character = "";// "不能动";
