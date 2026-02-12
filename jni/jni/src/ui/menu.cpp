@@ -541,7 +541,7 @@ ImGui::SetCursorPos(ImVec2(347.5,37.5));ImGui::BeginGroup();{
                 }
                 //}
 				//}
-                ImGui::End;
+                ImGui::End();
                 DrawPlayer();
                 ImGuiIO &io = ImGui::GetIO();
                 glViewport(0.0f, 0.0f, (int) io.DisplaySize.x, (int) io.DisplaySize.y);
