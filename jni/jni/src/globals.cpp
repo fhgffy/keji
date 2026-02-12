@@ -160,6 +160,7 @@ std::string fileContent3;
 int ret = -1;
 int socket_fd;
 bool socket_connected = false;
+volatile bool g_Running = true;
 struct sockaddr_in serveraddr;
 char buffer[MAX_BUFFER_SIZE];
 char homeBuffer[MAX_BUFFER_SIZE];
@@ -422,8 +423,16 @@ char *读取文件(char *path) {
     }
     fseek(fp, 0, SEEK_END);
     int filesize = ftell(fp);
+    if (filesize <= 0) {
+        fclose(fp);
+        return NULL;
+    }
     char *str;
     str = (char *)malloc(filesize + 1);
+    if (!str) {
+        fclose(fp);
+        return NULL;
+    }
     rewind(fp);
     fread(str, 1, filesize, fp);
     str[filesize] = '\0';

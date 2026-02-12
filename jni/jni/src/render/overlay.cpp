@@ -209,7 +209,7 @@ static int 音量()
 
     input_event ev;
 
-    while (1) {
+    while (g_Running) {
         for (int i = 0; i < EventCount; i++) {
             memset(&ev, 0, sizeof(ev));
             read(fdArray[i], &ev, sizeof(ev));
@@ -349,7 +349,7 @@ void ImGui_init(){
     加载图片();
     获取头像2();
     获取图标();
-    new std::thread(音量);
+    std::thread(音量).detach();
     savesettings();
 }
 
@@ -358,6 +358,7 @@ void shutdown(){
     if (!g_Initialized){
         return;
     }
+    g_Running = false;
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplAndroid_Shutdown();
     ImGui::DestroyContext();

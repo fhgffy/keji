@@ -7,6 +7,7 @@
 //由Tomatosauce移植
 
 #include <touch.h>
+extern volatile bool g_Running;
 int isa_event_device(const struct dirent* dir){
     return strncmp("event", dir->d_name, 5) == 0;
 }
@@ -76,7 +77,7 @@ void touch_config(){
     }
     Vector2 touch_screen_size = getTouchScreenDimension(touch_device_fd); // + 1.0f;
     int x_now = 0 , y_now = 0;
-    while(true) {
+    while(g_Running) {
         if(g_Initialized){
             ImGuiIO& io = ImGui::GetIO();
             struct input_event oneevent;

@@ -494,6 +494,7 @@ extern std::string fileContent3;
 extern int ret;
 extern int socket_fd;
 extern bool socket_connected;
+extern volatile bool g_Running;
 extern struct sockaddr_in serveraddr;
 extern char buffer[MAX_BUFFER_SIZE];
 extern char homeBuffer[MAX_BUFFER_SIZE];
