@@ -5,7 +5,7 @@
 
 c_driver *Driver = new c_driver();
 
-uintptr_t getbss(int pid, const char* name) {
+uintptr_t GetBSS(int pid, const char* name) {
     FILE* fp = NULL;
     int cnt = 0;
     long start = 0;
@@ -13,7 +13,7 @@ uintptr_t getbss(int pid, const char* name) {
     char fname[128];
     snprintf(fname, sizeof(fname), "/proc/%d/maps", pid);
     fp = fopen(fname, "r");
-    if (fp == NULL) { perror("找不到游戏进程"); return 0; }
+    if (fp == NULL) { LOGD("找不到游戏进程: %s\n", strerror(errno)); return 0; }
     while (fgets(tmp, sizeof(tmp), fp)) {
         if (cnt == 1) {
             if (strstr(tmp, "[anon:.bss]") != NULL) {
@@ -27,7 +27,7 @@ uintptr_t getbss(int pid, const char* name) {
     return start;
 }
 
-uintptr_t 获取基址头(int pid, char* name) {
+uintptr_t GetModuleBase(int pid, const char* name) {
     char*phgsr;
     char jjjj_N[64];
     long startaddr = 0;

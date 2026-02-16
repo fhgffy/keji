@@ -1,7 +1,18 @@
 // ============================================================
 // overlay.cpp - EGL窗口初始化 / 覆盖层模块
 // ============================================================
-#include "globals.h"
+#include "utils/ErrorHandler.h"
+#include "TextureUtils.h"
+#include "common/GlobalVars.h"
+#include "common/Functions.h"
+#include "config/settings.h"
+#include "imgui_impl_android.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui.h"
+#include <EGL/egl.h>
+#include <GLES3/gl3.h>
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
 #include "obfuscate.h"
 #include "oxorany.h"
 #include "FONTS/Font.h"
@@ -39,50 +50,54 @@ string exec(string command) {
 // ---- EGL 初始化 ----
 int init_egl(int _screen_x, int _screen_y, bool log)
 {
-    FILE *fp;
-    char buffer[1024];
-
-    fp = popen("settings put system block_untrusted_touches 0", "r");
-    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        printf("[+] 正在执行指令信任所有触摸\n[+] %s", buffer);
-    }
-    pclose(fp);
-
-    system("settings put global block_untrusted_touches 0 > /dev/null 2>&1");
-    system("settings put secure block_untrusted_touches 0 > /dev/null 2>&1");
+    // [AntiCheat] Removed noisy system/popen calls for stealth
+    // settings put system/global/secure block_untrusted_touches 0
+    // This should be done manually or via a cleaner method if needed.
+    LOGD("[+] Skipped block_untrusted_touches setting for stealth\n");
 
     bool sgfop;
     string sfflp;
-    cout << "[+] 是否开启防录屏 1[开启] 2[关闭]: ";
-    cin >> sfflp;
+    // cout << "[+] 是否开启防录屏 1[开启] 2[关闭]: "; // [AntiCheat] Silence input
+    // cin >> sfflp;
+    sfflp = "2"; // Default to OFF for automation/stealth, or let user config. For now default off to avoid blocking.
     if (sfflp == "1")
         sgfop = true;
     else
         sgfop = false;
 
     if (sgfop) {
-        printf("[+] 防录屏开启\n");
-        ::native_window = android::ANativeWindowCreator::Create("AImGui", _screen_x, _screen_y, true);
+        LOGD("[+] 防录屏开启\n");
+        // [AntiCheat] Randomize window title
+        srand(time(NULL));
+        string randomTitle = "";
+        const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        for (int i = 0; i < 10; i++) randomTitle += charset[rand() % (sizeof(charset) - 1)];
+        ::native_window = android::ANativeWindowCreator::Create(randomTitle.c_str(), _screen_x, _screen_y, true);
     }
 
     if (!sgfop) {
-        printf("[+] 防录屏关闭\n");
-        native_window = android::ANativeWindowCreator::Create("Ssage", _screen_x, _screen_y, false);
+        LOGD("[+] 防录屏关闭\n");
+        // [AntiCheat] Randomize window title
+        srand(time(NULL));
+        string randomTitle = "";
+        const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        for (int i = 0; i < 10; i++) randomTitle += charset[rand() % (sizeof(charset) - 1)];
+        native_window = android::ANativeWindowCreator::Create(randomTitle.c_str(), _screen_x, _screen_y, false);
     }
 
     ANativeWindow_acquire(native_window);
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
-        printf("获取显示设备失败，错误码：%u\n", glGetError());
+        LOGD("获取显示设备失败，错误码：%u\n", glGetError());
         return -1;
     }
-    if (log) printf("获取显示设备成功\n");
+    if (log) LOGD("获取显示设备成功\n");
 
     if (eglInitialize(display, 0, 0) != EGL_TRUE) {
-        printf("初始化EGL失败，错误码：%u\n", glGetError());
+        LOGD("初始化EGL失败，错误码：%u\n", glGetError());
         return -1;
     }
-    if (log) printf("初始化EGL成功\n");
+    if (log) LOGD("初始化EGL成功\n");
 
     EGLint num_config = 0;
     const EGLint attribList[] = {
@@ -96,16 +111,16 @@ int init_egl(int _screen_x, int _screen_y, bool log)
         EGL_STENCIL_SIZE, 8,
         EGL_NONE};
     if (eglChooseConfig(display, attribList, nullptr, 0, &num_config) != EGL_TRUE) {
-        printf("选择配置失败，错误码：%u\n", glGetError());
+        LOGD("选择配置失败，错误码：%u\n", glGetError());
         return -1;
     }
-    if (log) printf("配置数量：%d\n", num_config);
+    if (log) LOGD("配置数量：%d\n", num_config);
 
     if (!eglChooseConfig(display, attribList, &config, 1, &num_config)) {
-        printf("选择配置失败，错误码：%u\n", glGetError());
+        LOGD("选择配置失败，错误码：%u\n", glGetError());
         return -1;
     }
-    if (log) printf("选择配置成功\n");
+    if (log) LOGD("选择配置成功\n");
 
     EGLint egl_format;
     eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &egl_format);
@@ -113,23 +128,23 @@ int init_egl(int _screen_x, int _screen_y, bool log)
     const EGLint attrib_list[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
     context = eglCreateContext(display, config, EGL_NO_CONTEXT, attrib_list);
     if (context == EGL_NO_CONTEXT) {
-        printf("创建上下文失败，错误码：%u\n", glGetError());
+        LOGD("创建上下文失败，错误码：%u\n", glGetError());
         return -1;
     }
-    if (log) printf("创建上下文成功\n");
+    if (log) LOGD("创建上下文成功\n");
 
     surface = eglCreateWindowSurface(display, config, native_window, nullptr);
     if (surface == EGL_NO_SURFACE) {
-        printf("创建表面失败，错误码：%u\n", glGetError());
+        LOGD("创建表面失败，错误码：%u\n", glGetError());
         return -1;
     }
-    if (log) printf("创建表面成功\n");
+    if (log) LOGD("创建表面成功\n");
 
     if (!eglMakeCurrent(display, surface, surface, context)) {
-        printf("设置当前上下文失败，错误码：%u\n", glGetError());
+        LOGD("设置当前上下文失败，错误码：%u\n", glGetError());
         return -1;
     }
-    if (log) printf("设置当前上下文成功\n");
+    if (log) LOGD("设置当前上下文成功\n");
 
     return 1;
 }
@@ -140,16 +155,18 @@ void screen_config(){
     sscanf(window_size.c_str(),"Physical size: %dx%d",&screen_x,&screen_y);
     full_screen.ScreenX = screen_x;
     full_screen.ScreenY = screen_y;
-    std::cout << "[+] 分辨率: " << screen_x << "x" << screen_y << std::endl;
+    LOGD("[+] 分辨率: %dx%d\n", screen_x, screen_y);
 
     std::thread *orithread = new std::thread([&] {
         while(true){
             Orientation = atoi(exec("dumpsys display | grep 'mCurrentOrientation' | cut -d'=' -f2").c_str());
             if(Orientation == 0 || Orientation == 2){
+                std::lock_guard<std::mutex> lock(ScreenMutex); // [ThreadSafety] Lock
                 screen_x = full_screen.ScreenX;
                 screen_y = full_screen.ScreenY;
             }
             if(Orientation == 1 || Orientation == 3){
+                std::lock_guard<std::mutex> lock(ScreenMutex); // [ThreadSafety] Lock
                 screen_x = full_screen.ScreenY;
                 screen_y = full_screen.ScreenX;
             } else {
@@ -157,6 +174,7 @@ void screen_config(){
                 int tempx = atoi(tempstr.substr(12,1).c_str());
                 if(tempx == 0 || tempx ==1 || tempx == 2 || tempx==3 ){
                     Orientation = tempx;
+                    std::lock_guard<std::mutex> lock(ScreenMutex); // [ThreadSafety] Lock
                     if(Orientation == 1 || Orientation == 3){
                         screen_x = full_screen.ScreenY;
                         screen_y = full_screen.ScreenX;
@@ -166,7 +184,7 @@ void screen_config(){
                     }
                 }
             }
-            std::this_thread::sleep_for(0.5s);
+            std::this_thread::sleep_for(2.0s); // [AntiCheat] Increased interval from 0.5s to 2.0s
         }
     });
     orithread->detach();
@@ -191,11 +209,11 @@ static int GetEventCount3()
 
 static bool kang = true;
 
-static int 音量()
+static int VolumeControl()
 {
     int EventCount = GetEventCount3();
     if (EventCount < 0) {
-        printf("未找到输入设备\n");
+        LOGD("未找到输入设备\n");
         return -1;
     }
 
@@ -214,12 +232,12 @@ static int 音量()
             memset(&ev, 0, sizeof(ev));
             read(fdArray[i], &ev, sizeof(ev));
             if (ev.type == EV_KEY && ev.code == KEY_VOLUMEUP && ev.value == 1 && kang == true) {
-                悬浮窗 = true;
-                窗口状态 = true;
+                FloatingWindow = true;
+                WindowState = true;
             }
             else if (ev.type == EV_KEY && ev.code == KEY_VOLUMEDOWN && ev.value == 1 && kang == true) {
-                悬浮窗 = false;
-                窗口状态 = true;
+                FloatingWindow = false;
+                WindowState = true;
             }
         }
         usleep(3000);
@@ -248,17 +266,17 @@ void drawHexagonStar(float x, float y, float size, float rotation, ImDrawList* d
 // ---- 悬浮窗Logo绘制 ----
 void DrawLogo(float x, float y, float size){
     ImDrawList *draw_list = ImGui::GetWindowDrawList();
-    draw_list->AddImage(LOGO图片,{x - size /1,y - size / 1},{x + size / 1,y + size / 1});
+    draw_list->AddImage(LogoImage,{x - size /1,y - size / 1},{x + size / 1,y + size / 1});
 }
 
 // ---- 上帝视距 ----
-void 上帝god()
+void GodFunction()
 {
-    pid = Driver->获取进程ID((char*)"com.tencent.tmgp.sgame");
+    pid = Driver->GetPID((char*)"com.tencent.tmgp.sgame");
     Driver->initialize(pid);
-    lil2cpp_base = Driver->获取基址头((char*)"libil2cpp.so");
+    lil2cpp_base = Driver->GetModuleBase((char*)"libil2cpp.so");
     long int xtemp = lil2cpp_base + 0x8BE1000;
-    long int god_address = Driver->读取指针(Driver->读取指针(xtemp + 0x4220) + 0xA0) + 0x24;
+    long int god_address = Driver->ReadPointer(Driver->ReadPointer(xtemp + 0x4220) + 0xA0) + 0x24;
     Driver->write<float>(god_address, godvalue);
 }
 
@@ -346,10 +364,10 @@ void ImGui_init(){
     g_Initialized = true;
 
     ImGui::StyleColorsClassic();
-    加载图片();
-    获取头像2();
-    获取图标();
-    std::thread(音量).detach();
+    LoadImages();
+    GetAvatar2();
+    GetIcons();
+    std::thread(VolumeControl).detach();
     savesettings();
 }
 

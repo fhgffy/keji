@@ -2,10 +2,13 @@
 // menu.cpp - ImGui 菜单模块 (tick 函数)
 // ============================================================
 #include "globals.h"
+#include "../config/Paths.h"
 #include "obfuscate.h"
 #include "oxorany.h"
 #include "memory/driver.h"
+#include "memory/driver.h"
 #include "config/offsets.h"
+#include "game/GameManager.h"
 
 static bool 一键开关 = false;
 static int style_idx = 1;
@@ -32,20 +35,20 @@ void tick() {
     static int 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕 = 1;
     ImGui::SetNextWindowSize(ImVec2(500,560));
     ImGuiStyle& style = ImGui::GetStyle();
-    if (悬浮球)
+    if (FloatingBall)
   {
  /*   ImGui::SetNextWindowSize({120, 120});
     
     style.Colors[ImGuiCol_WindowBg].w = 0;
-    if (ImGui::Begin("悬浮图片", &悬浮球, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar))
+    if (ImGui::Begin("悬浮图片", &FloatingBall, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar))
     {
     
         
          
      
-      if (窗口状态) {
+      if (WindowState) {
         ImGui::SetWindowPos(Pos);
-        窗口状态 = false;
+        WindowState = false;
       }
       Pos = ImGui::GetWindowPos();
       ImDrawList* Draw = ImGui::GetWindowDrawList();
@@ -60,9 +63,9 @@ void tick() {
       }
       if (ImGui::IsMouseReleased(0) && !ImGui::IsMouseDragging(0) && !isDragging && ImGui::IsWindowHovered())
       {
-        悬浮球 = false;
-        悬浮窗 = true;
-        窗口状态 = true;
+        FloatingBall = false;
+        FloatingWindow = true;
+        WindowState = true;
       }
       if (!ImGui::IsMouseDragging(0))
       {
@@ -111,7 +114,7 @@ void tick() {
         			show = true;
 					}*/
 //===================================| 𝗠𝗔𝗜𝗡 𝗜𝗠𝗚𝗨𝗜 𝗠𝗘𝗡𝗨 |≠=======================//
-				if(悬浮窗){
+				if(FloatingWindow){
         		ImGui::SetNextWindowSize( ImVec2(1070 , 690) );
         		ImGui::MainBegin( "WIDGETS_EXPERT MENU", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_NoDecoration |  ImGuiWindowFlags_NoBackground);
         		{
@@ -186,7 +189,7 @@ void tick() {
 				if (ImGui::WIDGETS_EXPERT_Tab("y","主页菜单", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 != 1)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 = 1; active = true; }
         		if (ImGui::WIDGETS_EXPERT_Tab("D","功能菜单", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 != 2)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 = 2; active = true; }
         		if (ImGui::WIDGETS_EXPERT_Tab("F","配置调节", 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 != 3)) { 𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗 = 3; active = true; }
-        		if(ImGui::WIDGETS_EXPERT_Close("i","关闭悬浮窗", ImVec2(80, 80), true)){悬浮球 = true;悬浮窗 = false; 窗口状态 = true;}	
+        		if(ImGui::WIDGETS_EXPERT_Close("i","关闭悬浮窗", ImVec2(80, 80), true)){FloatingBall = true;FloatingWindow = false; WindowState = true;}	
         		ImGui::PopStyleVar();}ImGui::EndGroup( );
 //===============================================| 𝗧𝗔𝗕 𝗢𝗡𝗘  |======================≠=================//
 											ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 14, 7 });
@@ -207,19 +210,19 @@ void tick() {
 											
                                                 ImGui::Text("游戏进程: %d", pid);
                                                                          
-                                                            if(进程与模块)
+                                                            if(IsProcModInit)
             {
            // if (ImGui::Button("成功获取进程与模块",{-1,75}))   
             if (ImGui::OptButton1("初始化", ImVec2(-1, 75), false))
             { 
-            DrawInit();
+            GM.Init();
             }
             }else{
             //if (ImGui::Button("未获取进程与模块",{-1,75}))   
              if (ImGui::OptButton1("初始化", ImVec2(-1, 75), false))
             {    
-            DrawInit();
-            进程与模块 = true;
+            GM.Init();
+            IsProcModInit = true;
             }
             }
             
@@ -258,19 +261,19 @@ if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  == 1){
 								        	ImGui::SetCursorPos( ImVec2( 335, 155 ) );
                 							ImGui::MenuChild( "绘图", ImVec2(350, 355) );{
                 							
-                							  ImGui::SliderFloat("上帝视角", &shangdi,0,3,"%.2f",1);
-                							  ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("视距开关", &上帝);
+                							  ImGui::SliderFloat("上帝视角", &GodMode,0,3,"%.2f",1);
+                							  ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("视距开关", &GodView);
 										
-                							          if(huitu==0){
+                							          if(IsDrawing==0){
             if (ImGui::OptButton1("一键开启", ImVec2(-1, 75), false))
            {
            
-           huitu=1;血量=1;地图=1;射线=1;方框=1;野怪=1;兵线=1;方框技能=1;顶上技能=1;野血=1;框技=1;框头=1;回城=1;技陷=1;
+           IsDrawing=1;ShowHealth=1;ShowMap=1;ShowLine=1;ShowBox=1;ShowJungle=1;ShowMinions=1;ShowSkillBox=1;ShowTopSkill=1;ShowJungleHealth=1;BoxSkill=1;ShowHeadBox=1;ShowRecall=1;SkillTrap=1;
            }
           }else{
           if (ImGui::OptButton1("一键关闭", ImVec2(-1, 75), false))
           {
-          huitu=0;血量=0;地图=0;射线=0;方框=0;野怪=0;兵线=0;方框技能=0;顶上技能=0;眼位=0;框技=0;框头=0;回城=0;技陷=0;
+          IsDrawing=0;ShowHealth=0;ShowMap=0;ShowLine=0;ShowBox=0;ShowJungle=0;ShowMinions=0;ShowSkillBox=0;ShowTopSkill=0;ShowJungleHealth=0;BoxSkill=0;ShowHeadBox=0;ShowRecall=0;SkillTrap=0;
           }
           }
           
@@ -288,41 +291,41 @@ if (𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗_𝗦𝗨𝗕𝗧𝗔𝗕  == 1){
                 							
 ImGui::SetCursorPos( ImVec2( 335, 565 ) );
 ImGui::MenuChild( "技能", ImVec2(350, 110) );{
-ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("技陷", &技陷);
-ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("方框技能", &方框技能);
-	ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("顶上技能", &顶上技能);
+ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("技陷", &SkillTrap);
+ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("方框技能", &ShowSkillBox);
+	ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("顶上技能", &ShowTopSkill);
 }ImGui::EndChild( );
 
                 							ImGui::SetCursorPos( ImVec2( 700, 155 ) );
                 							ImGui::MenuChild( "选项", ImVec2( 350, 520) );{
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("血量", &血量);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("血量", &ShowHealth);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-											ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("地图", &地图);
+											ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("地图", &ShowMap);
 											ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("射线", &射线);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("射线", &ShowLine);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("方框", &方框);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("方框", &ShowBox);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("野怪", &野怪);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("野怪", &ShowJungle);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("兵线", &兵线);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("兵线", &ShowMinions);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("眼位", &眼位);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("眼位", &ShowWards);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("框技", &框技);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("框技", &BoxSkill);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("框头", &框头);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("框头", &ShowHeadBox);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("回城", &回城);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("回城", &ShowRecall);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
                 							
@@ -374,16 +377,16 @@ ImGui::MenuChild( "共享", ImVec2(350, 190) );{
 												
                                             ImGui::SetCursorPos( ImVec2( 700, 155 ) );
                                             ImGui::MenuChild( "共享选项", ImVec2( 335, 520 ) );{
-                                            ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("开启共享", &ESPMenu.是否开启共享);
+                                            ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("开启共享", &ESPMenu.IsSharedOpen);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                                            ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("头像显示", &ESPMenu.显示头像);
+                                            ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("头像显示", &ESPMenu.ShowAvatar);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("野怪计时", &ESPMenu.野怪计时);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("野怪计时", &ESPMenu.JungleTimer);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
-                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("兵线显示", &ESPMenu.显示兵线);
+                							ImGui::𝗜𝗠𝗚𝗨𝗜_𝗚𝗢𝗗("兵线显示", &ESPMenu.ShowMinions);
                 							ImGui::Separator();
                 							ImGui::ItemSize(ImVec2(0, 2));
                 							
@@ -456,44 +459,44 @@ ImGui::SetCursorPos(ImVec2(347.5,37.5));ImGui::BeginGroup();{
 											
    if(ImGui::SliderInt("头像X", &SmallMapX,-300,300,"%.0f",2)){char urlls[2560];
         sprintf(urlls, "%d", SmallMapX);
-        写出文件("/storage/emulated/0/Best/小x1",urlls);}
+        WriteFile(oxorany(PATH_CONF_SMX),urlls);}
         if(ImGui::SliderInt("头像Y", &SmallMapY,-300,300,"%.0f",2)){char urlls[2560];
         sprintf(urlls, "%d", SmallMapY);
         
-        写出文件("/storage/emulated/0/Best/小y1",urlls);}
+        WriteFile(oxorany(PATH_CONF_SMY),urlls);}
                       if(ImGui::SliderInt("实体X", &SmallHPX,-300,300,"%.0f",2)){char urlls[2560];
         sprintf(urlls, "%d", SmallHPX);
         
-        写出文件("/storage/emulated/0/Best/大x1",urlls);}
+        WriteFile(oxorany(PATH_CONF_SHX),urlls);}
                       if(ImGui::SliderInt("实体Y", &SmallHPY,-300,300,"%.0f",2)){char urlls[2560];
         sprintf(urlls, "%d", SmallHPY);
         
-        写出文件("/storage/emulated/0/Best/大y1",urlls);}
+        WriteFile(oxorany(PATH_CONF_SHY),urlls);}
                       
                       
-       if(ImGui::SliderInt("技能左右", &jinenglanzX,-2000,2000,"%.0f",2)){char urlls[2560];
-        sprintf(urlls, "%d", jinenglanzX);
+       if(ImGui::SliderInt("技能左右", &SkillSlotX,-2000,2000,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", SkillSlotX);
         
-        写出文件("/storage/emulated/0/Best/技能栏左右1",urlls);}
+        WriteFile(oxorany(PATH_CONF_SSX),urlls);}
         
-        if(ImGui::SliderInt("技能上下", &jinenglanzY,-500,500,"%.0f",2)){char urlls[2560];
-        sprintf(urlls, "%d", jinenglanzY);
+        if(ImGui::SliderInt("技能上下", &SkillSlotY,-500,500,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", SkillSlotY);
         
-        写出文件("/storage/emulated/0/Best/技能栏上下1",urlls);}
+        WriteFile(oxorany(PATH_CONF_SSY),urlls);}
         
         
-      if(ImGui::SliderInt("头像大小", &touxiangdaxiao,-50,50,"%.0f",2)){char urlls[2560];
-        sprintf(urlls, "%d", touxiangdaxiao);
+      if(ImGui::SliderInt("头像大小", &IconSize,-50,50,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", IconSize);
         
-        写出文件("/storage/emulated/0/Best/头像大小",urlls);}
-      if(ImGui::SliderInt("血量大小", &xiaodituxue,-50,50,"%.0f",2)){char urlls[2560];
-        sprintf(urlls, "%d", xiaodituxue);
+        WriteFile(oxorany(PATH_CONF_ICS),urlls);}
+      if(ImGui::SliderInt("血量大小", &MinimapHealthSize,-50,50,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", MinimapHealthSize);
         
-        写出文件("/storage/emulated/0/Best/血量大小",urlls);}
-      if(ImGui::SliderInt("头像间隔", &jiange,-100,100,"%.0f",2)){char urlls[2560];
-        sprintf(urlls, "%d", jiange);
+        WriteFile(oxorany(PATH_CONF_MHS),urlls);}
+      if(ImGui::SliderInt("头像间隔", &Spacing,-100,100,"%.0f",2)){char urlls[2560];
+        sprintf(urlls, "%d", Spacing);
         
-        写出文件("/storage/emulated/0/Best/头像间隔",urlls);}
+        WriteFile(oxorany(PATH_CONF_SPC),urlls);}
 											
 											
                 							
@@ -503,24 +506,24 @@ ImGui::SetCursorPos(ImVec2(347.5,37.5));ImGui::BeginGroup();{
 
                                             ImGui::SetCursorPos( ImVec2( 700, 155 ) );
                 							ImGui::MenuChild( "共享调整", ImVec2( 350, 520) );{
-                								if(ImGui::SliderInt("共享左右调整", &ESPMenu.小地图左右调整,-150,300)){char urlls[2560];
-        sprintf(urlls, "%d", ESPMenu.小地图左右调整);
-        写出文件("/storage/emulated/0/Best/共享左右调整",urlls);}
-        	if(ImGui::SliderInt("共享上下调整", &ESPMenu.小地图上下调整,-200,200)){char urlls[2560];
-        sprintf(urlls, "%d", ESPMenu.小地图上下调整);
-        写出文件("/storage/emulated/0/Best/共享上下调整",urlls);}
-        if(ImGui::SliderInt("共享野怪左右调整", &ESPMenu.野怪左右调整,-200,200)){char urlls[2560];
-        sprintf(urlls, "%d", ESPMenu.野怪左右调整);
-        写出文件("/storage/emulated/0/Best/共享野怪左右调整",urlls);}
-                if(ImGui::SliderInt("共享野怪上下调整", &ESPMenu.野怪上下调整,-200,200)){char urlls[2560];
-        sprintf(urlls, "%d", ESPMenu.野怪上下调整);
-        写出文件("/storage/emulated/0/Best/共享野怪上下调整",urlls);}
-                if(ImGui::SliderInt("共享兵线左右调整", &ESPMenu.兵线左右调整,-200,200)){char urlls[2560];
-        sprintf(urlls, "%d", ESPMenu.兵线左右调整);
-        写出文件("/storage/emulated/0/Best/共享兵线左右调整",urlls);}
-                if(ImGui::SliderInt("共享分辨率x调整", &ESPMenu.分辨率X,1000,4000)){char urlls[2560];
-        sprintf(urlls, "%d", ESPMenu.分辨率X);
-        写出文件("/storage/emulated/0/Best/共享分辨率x调整",urlls);}
+                								if(ImGui::SliderInt("共享左右调整", &ESPMenu.MinimapAdjX,-150,300)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.MinimapAdjX);
+        WriteFile(oxorany(PATH_CONF_SAX),urlls);}
+        	if(ImGui::SliderInt("共享上下调整", &ESPMenu.MinimapAdjY,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.MinimapAdjY);
+        WriteFile(oxorany(PATH_CONF_SAY),urlls);}
+        if(ImGui::SliderInt("共享野怪左右调整", &ESPMenu.JungleAdjX,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.JungleAdjX);
+        WriteFile(oxorany(PATH_CONF_JAX),urlls);}
+                if(ImGui::SliderInt("共享野怪上下调整", &ESPMenu.JungleAdjY,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.JungleAdjY);
+        WriteFile(oxorany(PATH_CONF_JAY),urlls);}
+                if(ImGui::SliderInt("共享兵线左右调整", &ESPMenu.MinionAdjX,-200,200)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.MinionAdjX);
+        WriteFile(oxorany(PATH_CONF_MAX),urlls);}
+                if(ImGui::SliderInt("共享分辨率x调整", &ESPMenu.ResolutionX,1000,4000)){char urlls[2560];
+        sprintf(urlls, "%d", ESPMenu.ResolutionX);
+        WriteFile(oxorany(PATH_CONF_RSX),urlls);}
                 							
                 							
                 						
@@ -542,7 +545,7 @@ ImGui::SetCursorPos(ImVec2(347.5,37.5));ImGui::BeginGroup();{
                 //}
 				//}
                 ImGui::End();
-                DrawPlayer();
+                GM.UpdateAndDraw();
                 ImGuiIO &io = ImGui::GetIO();
                 glViewport(0.0f, 0.0f, (int) io.DisplaySize.x, (int) io.DisplaySize.y);
                 glClearColor(0.0f, 0.0f, 0.0f, 0.0f);

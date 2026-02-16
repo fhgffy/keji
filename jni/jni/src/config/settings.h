@@ -1,5 +1,6 @@
 #pragma once
-#include "globals.h"
+#include "common/Types.h"
+#include "config/GameConfig.h"
+
 // 用户配置读写模块
-// 函数声明见 globals.h:
-//   savesettings()
+void savesettings();

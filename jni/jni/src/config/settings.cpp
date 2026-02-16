@@ -2,6 +2,7 @@
 // settings.cpp - 用户配置读写
 // ============================================================
 #include "globals.h"
+#include "oxorany.h" // [AntiCheat] Path obfuscation
 
 static std::string ReadFileContent(const std::string& filePath) {
     std::ifstream file(filePath, std::ios::in);
@@ -14,45 +15,50 @@ static std::string ReadFileContent(const std::string& filePath) {
     return content;
 }
 
+#include "Paths.h"
+
 void savesettings(){
     // 初始化文件内容
     if (fileContent1.empty()) {
-        fileContent1 = ReadFileContent("/sdcard/Best/王者小狐狸设备码.c");
-        fileContent2 = ReadFileContent("/sdcard/Best/王者小狐狸卡密.c");
-        fileContent3 = ReadFileContent("/sdcard/Best/王者小狐狸卡密时间.c");
+    // [AntiCheat] Path Sanitization: /data/local/tmp/.cache_sys/
+        // Using hidden filenames to avoid casual inspection
+        fileContent1 = ReadFileContent(oxorany(PATH_SYS_DEVICE_ID)); 
+        fileContent2 = ReadFileContent(oxorany(PATH_SYS_TOKEN));
+        fileContent3 = ReadFileContent(oxorany(PATH_SYS_TIME));
     }
 
     //添加配置
     char *tmp;
-    tmp=读取文件("/storage/emulated/0/Best/技能栏左右1");
-    if(tmp){jinenglanzX= atof(tmp); free(tmp);}
-
-    tmp=读取文件("/storage/emulated/0/Best/技能栏上下1");
-    if(tmp){jinenglanzY= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/小x1");
+    // [AntiCheat] Path Sanitization & Obfuscation
+    tmp=ReadFile(oxorany(PATH_CONF_SSX));
+    if(tmp){SkillSlotX= atof(tmp); free(tmp);}
+    
+    tmp=ReadFile(oxorany(PATH_CONF_SSY));
+    if(tmp){SkillSlotY= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_SMX));
     if(tmp){SmallMapX= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/小y1");
+    tmp=ReadFile(oxorany(PATH_CONF_SMY));
     if(tmp){SmallMapY= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/大x1");
+    tmp=ReadFile(oxorany(PATH_CONF_SHX));
     if(tmp){SmallHPX= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/大y1");
+    tmp=ReadFile(oxorany(PATH_CONF_SHY));
     if(tmp){SmallHPY= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/头像间隔");
-    if(tmp){jiange= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/血量大小");
-    if(tmp){xiaodituxue= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/头像大小");
-    if(tmp){touxiangdaxiao= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/共享左右调整");
-    if(tmp){ESPMenu.小地图左右调整= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/共享上下调整");
-    if(tmp){ESPMenu.小地图上下调整= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/共享兵线左右调整");
-    if(tmp){ESPMenu.兵线左右调整= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/共享野怪左右调整");
-    if(tmp){ESPMenu.野怪左右调整= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/共享野怪上下调整");
-    if(tmp){ESPMenu.野怪上下调整= atof(tmp); free(tmp);}
-    tmp=读取文件("/storage/emulated/0/Best/共享分辨率x调整");
-    if(tmp){ESPMenu.分辨率X= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_SPC));
+    if(tmp){Spacing= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_MHS));
+    if(tmp){MinimapHealthSize= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_ICS));
+    if(tmp){IconSize= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_SAX));
+    if(tmp){ESPMenu.MinimapAdjX= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_SAY));
+    if(tmp){ESPMenu.MinimapAdjY= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_MAX));
+    if(tmp){ESPMenu.MinionAdjX= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_JAX));
+    if(tmp){ESPMenu.JungleAdjX= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_JAY));
+    if(tmp){ESPMenu.JungleAdjY= atof(tmp); free(tmp);}
+    tmp=ReadFile(oxorany(PATH_CONF_RSX));
+    if(tmp){ESPMenu.ResolutionX= atof(tmp); free(tmp);}
 }
